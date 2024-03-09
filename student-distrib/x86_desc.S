@@ -85,6 +85,12 @@ ldt_desc_ptr:
 gdt_bottom:
 
     .align 16
+# gdt descriptor
+gdt_desc_ptr:
+    .word gdt_bottom - gdt - 1
+    .long gdt
+
+    .align 16
 ldt:
     .rept 4
     .quad 0
