@@ -11,16 +11,55 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
+
+    /* all interrupts masked */
+    outb(master_mask, MASTER_8259_DATA);
+    outb(slave_mask, SLAVE_8259_DATA);
+    /* send icws */
+    outb(ICW1, MASTER_8259_CMD);
+    outb(ICW1, SLAVE_8259_CMD);
+    outb(ICW2_MASTER, MASTER_8259_DATA);
+    outb(ICW2_SLAVE, SLAVE_8259_DATA);
+    outb(ICW3_MASTER, MASTER_8259_DATA);
+    outb(ICW3_SLAVE, SLAVE_8259_DATA);
+
+    enable_irq( 2 ); // not sure what goes here. i think pin 2
 }
 
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
+    if( irq_num >= 15){return;}
+
+    if (irq_num >= 8){
+        slave_mask &= ~(1 << irq_num);
+        outb(slave_mask, SLAVE_8259_DATA);
+    }
+
+    else{
+        master_mask &= !(1 << irq_num);
+        outb(master_mask, MASTER_8259_DATA);
+    }
 }
 
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
+    if( irq_num >= 15){return;}
+    
+    if (irq_num >= 8){
+        slave_mask |= ~(1 << irq_num);
+        outb(slave_mask, SLAVE_8259_DATA);
+    }
+
+    else{
+        master_mask |= !(1 << irq_num);
+        outb(master_mask, MASTER_8259_DATA);
+    }
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
+    if(irq_num >= 8)
+		outb(EOI, SLAVE_8259_CMD);
+ 
+	outb(EOI, MASTER_8259_CMD);
 }
