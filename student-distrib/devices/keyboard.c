@@ -12,12 +12,10 @@ void keyboard_int(void){
     /* google says keybaord is usually irq 1*/
     int nothing = 696969; 
     enable_irq( 1 );
-    uint16_t idx;
-    uint16_t code = get_key(idx);
     //save data from the respective port
     //call the handler
     // pass the data to the handler 
-    uint16_t keycodes[];
+    uint16_t keycodes[0xD7];
         keycodes[0x01] = nothing; //escape pressed
         keycodes[0x02] = '1';
         keycodes[0x03] = '2';
@@ -233,6 +231,8 @@ void keyboard_int(void){
         keycodes[0xD5] =NULL;
         keycodes[0xD6] =NULL;
         keycodes[0xD7] =NULL;
+
+      uint16_t code = get_key();
 }
 
 uint16_t get_key(void){
