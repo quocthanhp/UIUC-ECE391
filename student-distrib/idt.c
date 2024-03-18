@@ -128,6 +128,8 @@ void idt_init(void){
 
 
     }
+
+    //exception
     SET_IDT_ENTRY(idt[0x00],divide_by_zero);
     SET_IDT_ENTRY(idt[0x01],Debug);
     SET_IDT_ENTRY(idt[0x02],Non_maskable_interrupt);
@@ -150,5 +152,10 @@ void idt_init(void){
     SET_IDT_ENTRY(idt[0x13],SIMD_FloatingPoint_Exception);
     SET_IDT_ENTRY(idt[0x14],Virtualization_Exception);
     SET_IDT_ENTRY(idt[0x15],Control_Protection_Exception);
-    SET_IDT_ENTRY(idt[0x80],syscall)
+
+    //interrupts for the keyboard and the RTC
+    SET_IDT_ENTRY(idt[0x21],keyboard_interrupt);
+    SET_IDT_ENTRY(idt[0x28],rtc_interrupt);
+    //system calls
+    SET_IDT_ENTRY(idt[0x80],syscall);
 }
