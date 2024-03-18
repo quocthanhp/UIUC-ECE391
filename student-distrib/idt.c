@@ -34,8 +34,8 @@ void Invalid_Opcode(){
     while(1);
 }
 
-void Coprocessor_not_available(){
-    printf("EXCEPTION: Coprocessor not available\n")
+void device_not_available(){
+    printf("EXCEPTION: device not available\n")
     while(1);
 }
 	
@@ -135,7 +135,7 @@ void idt_init(void){
     SET_IDT_ENTRY(idt[0x04],Overflow);
     SET_IDT_ENTRY(idt[0x05],Bound_Range_Exceeded);
     SET_IDT_ENTRY(idt[0x06],Invalid_Opcode);
-    SET_IDT_ENTRY(idt[0x07],Coprocessor_not_available);
+    SET_IDT_ENTRY(idt[0x07],device_not_available);
     SET_IDT_ENTRY(idt[0x08],Double_Fault);
     SET_IDT_ENTRY(idt[0x09],Coprocessor_Segment_Overrun);
     SET_IDT_ENTRY(idt[0x0A],Invalid_Task_State_Segment);
