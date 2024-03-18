@@ -3,87 +3,88 @@
 #include "x86_desc.h"
 
 void divide_by_zero(){
-    printf("EXCEPTION: DIVIDE BY ZERO\n")
+    printf("EXCEPTION: DIVIDE BY ZERO\n");
 }
 
 void Debug(){
-    printf("EXCEPTION: Debug\n")
+    printf("EXCEPTION: Debug\n");
 }
 
 void Non_maskable_interrupt(){
-    printf("EXCEPTION: non-maskable interrupt\n")
+    printf("EXCEPTION: non-maskable interrupt\n");
 }
 void Breakpoint(){
-    printf("EXCEPETION: BREAKPOINT interrupt\n")
+    printf("EXCEPETION: BREAKPOINT interrupt\n");
 }
 
 void Overflow(){
-    printf("EXCEPTION: OVERFLOW interrupt\n")
+    printf("EXCEPTION: OVERFLOW interrupt\n");
 }
 void Bound_Range_Exceeded(){
-    printf("EXCEPTION: Bound Range Exceeded\n")
+    printf("EXCEPTION: Bound Range Exceeded\n");
 }
 void Invalid_Opcode(){
-    printf("EXCEPTION: Invalid Opcode\n")
+    printf("EXCEPTION: Invalid Opcode\n");
 }
 
 void Coprocessor_not_available(){
-    printf("EXCEPTION: Coprocessor not available\n")
+    printf("EXCEPTION: Coprocessor not available\n");
 }
 	
 void Double_Fault(){
-    printf("EXCEPTION: Double Fault\n")
+    printf("EXCEPTION: Double Fault\n");
 }
-    
+
+/* never called */    
 void Coprocessor_Segment_Overrun(){
-    printf("EXCEPTION: Double Fault\n")
+    printf("EXCEPTION: Double Fault\n");
 }
 void Invalid_Task_State_Segment(){
-    printf("EXCEPTION: Invalid Task State Segment\n")
+    printf("EXCEPTION: Invalid Task State Segment\n");
 }
 
 void Segment_not_present(){
-    printf("EXCEPTION: Segment not present\n")
+    printf("EXCEPTION: Segment not present\n");
 }
 
 void Stack_Segment_Fault(){
-    printf("EXCEPTION: Stack Segment Fault\n")
+    printf("EXCEPTION: Stack Segment Fault\n");
 }
     
 void General_Protection_Fault(){
-    printf("EXCEPTION: General Protection Fault\n")
+    printf("EXCEPTION: General Protection Fault\n");
 }
 
 void Page_Fault(){
-    printf("EXCEPTION: Page Fault\n")
+    printf("EXCEPTION: Page Fault\n");
 }
     
 void reserved(){
-    printf("EXCEPTION: reserved\n")
+    printf("EXCEPTION: reserved\n");
 }
     
 void x87_Floating_Point_Exception(){
-    printf("EXCEPTION:x87 Floating Point Exception\n")
+    printf("EXCEPTION:x87 Floating Point Exception\n");
 }
     
 void Alignment_Check(){
-    printf("EXCEPTION:Alignment Check\n")
+    printf("EXCEPTION:Alignment Check\n");
 }
     
 void Machine_Check(){
-    printf("Machine Check\n")
+    printf("Machine Check\n");
 }
     
 void SIMD_FloatingPoint_Exception(){
-    printf("EXCEPTION: SIMD Floating-Point Exception\n")
+    printf("EXCEPTION: SIMD Floating-Point Exception\n");
 }
     
 void Virtualization_Exception(){
-    printf("EXCEPTION: Virtualization Exception\n")
+    printf("EXCEPTION: Virtualization Exception\n");
 }
 
 void Control_Protection_Exception(){
-    printf("EXCEPTION: Control Protection Exception\n")
+    printf("EXCEPTION: Control Protection Exception\n");
 }
     
 void idt_init(void){

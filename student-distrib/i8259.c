@@ -6,11 +6,15 @@
 #include "lib.h"
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
-uint8_t master_mask; /* IRQs 0-7  */
-uint8_t slave_mask;  /* IRQs 8-15 */
+uint8_t master_mask = 0xFF00; /* IRQs 0-7  */
+uint8_t slave_mask  = 0x00FF;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
+
+    uint32_t a1, a2;
+    a1 = inb(MASTER_8259_DATA);
+    a2 = inb(SLAVE_8259_DATA);
 
     /* all interrupts masked */
     outb(master_mask, MASTER_8259_DATA);
@@ -22,6 +26,12 @@ void i8259_init(void) {
     outb(ICW2_SLAVE, SLAVE_8259_DATA);
     outb(ICW3_MASTER, MASTER_8259_DATA);
     outb(ICW3_SLAVE, SLAVE_8259_DATA);
+
+    outb(ICW4, MASTER_8259_DATA);
+    outb(ICW4, SLAVE_8259_DATA);
+
+    outb(a1, MASTER_8259_DATA);
+    outb(a2, SLAVE_8259_DATA);
 
     enable_irq( 2 ); // not sure what goes here. i think pin 2
 }

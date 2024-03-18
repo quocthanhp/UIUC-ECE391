@@ -1,7 +1,7 @@
 
 #include "RTC.h"
-#include "i8259.h"
-#include "lib.h"
+#include "../i8259.h"
+#include "../lib.h"
 
 
 
@@ -10,14 +10,16 @@
 *  INPUT : void
 *  OUTPUT : -1/0 
 */
+/* ref: https://wiki.osdev.org/RTC */
 uint32_t RTC_INIT(void){
     /* irq is 8*/
+    uint32_t rate = 1024;
     disable_irq(8);
 
-    outb(STATUSB, CMOS_CMD);
+    outb(STATUSA, CMOS_CMD);
     char prev = inb(CMOS_DATA);
-    outb(STATUSB, CMOS_CMD);
-    outb(prev | 0x40, CMOS_DATA);
+    outb(STATUSA, CMOS_CMD);
+    outb((prev & 0xF0) | rate, CMOS_DATA);
 
     enable_irq(8);
     return 0;
