@@ -149,3 +149,21 @@ Control_Protection_Exception_:
     popal
     iret
 
+
+keyboard_interrupt:
+    cli
+    pushal
+    //push flags
+    call keyboard_interrupt_ //temp name
+    popal
+    sti
+    iret
+
+rtc_interrupt:
+    cli
+    pushal
+    //push flags
+    call rtc_interrupt_     //temp rtc name
+    popal
+    sti
+    iret
