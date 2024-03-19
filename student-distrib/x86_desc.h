@@ -214,6 +214,80 @@ do {                                    \
     );                                  \
 } while (0)
 
+#define NUM_PDE                 1024
+#define NUM_PTE                 1024
+#define PAGE_SIZE_4KB           0x1000
+
+
+// Page Directory Entry structure for a 4 KB Page Table in an x86 system.
+//intel manual link 3- 24
+typedef union PageDirectoryEntry4KB {
+  uint32_t value;
+  struct {
+      uint32_t isPresent       :1;
+      uint32_t isReadWrite     :1;
+      uint32_t isUserSupervisor:1;
+      uint32_t isWriteThrough  :1;
+      uint32_t isCacheDisabled :1;
+      uint32_t isAccessed      :1;
+      uint32_t isReserved      :1;
+      uint32_t isPageSize      :1;
+      uint32_t isGlobal        :1;
+      uint32_t isAvailable     :3;
+      uint32_t pageTableBaseAddr:20;
+  } __attribute__ ((packed));
+} PageDirectoryEntry4KB;
+
+// Page Directory Entry structure for a 4 MB Page Table in an x86 system.
+//3 -25
+typedef union PageDirectoryEntry4MB {
+  uint32_t value;
+  struct {
+      uint32_t isPresent       :1;
+      uint32_t isReadWrite     :1;
+      uint32_t isUserSupervisor:1;
+      uint32_t isWriteThrough  :1;
+      uint32_t isCacheDisabled :1;
+      uint32_t isAccessed      :1;
+      uint32_t isDirty         :1;
+      uint32_t isPageSize      :1;
+      uint32_t isGlobal        :1;
+      uint32_t isAvailable     :3;
+      uint32_t isPat           :1;
+      uint32_t isReserved      :9;
+      uint32_t pageBaseAddr    :10;
+  } __attribute__ ((packed));
+} PageDirectoryEntry4MB;
+
+// Union for Page Diecetory Entry for 4KB and 4MB page table
+typedef union PageDirectoryEntry {
+    PageDirectoryEntry4KB pde_KB;
+    PageDirectoryEntry4MB pde_MB;
+} pde_t;
+
+// Page Table Entry structure for a 4 KB Page Table in an x86 system
+//intel manual 
+typedef union PageTableEntry4KB {
+  uint32_t value;
+  struct {
+      uint32_t isPresent       :1;
+      uint32_t isReadWrite     :1;
+      uint32_t isUserSupervisor:1;
+      uint32_t isWriteThrough  :1;
+      uint32_t isCacheDisabled :1;
+      uint32_t isAccessed      :1;
+      uint32_t isDirty         :1;
+      uint32_t isPat           :1;
+      uint32_t isGlobal        :1;
+      uint32_t isAvailable     :3;
+      uint32_t pageBaseAddr    :20;
+  } __attribute__ ((packed));
+} PageTableEntry4KB;
+
+// Variables for Page Directory and Page Table, aligned on 4kB boundaries
+extern pde_t page_directory[NUM_PDE] __attribute__((aligned (PAGE_SIZE_4KB)));
+extern PageTableEntry4KB page_table[NUM_PTE] __attribute__((aligned (PAGE_SIZE_4KB)));
+
 #endif /* ASM */
 
 #endif /* _x86_DESC_H */
