@@ -1,169 +1,39 @@
-; #include "idt.c"
-; #include "idt.h"
+#define ASM     1
+#include "idt.c"
+#include "idt.h"
 
-; divide_by_zero_:
-;     pushal
-;     //push flags
-;     call divide_by_zero
-;     popal
-;     iret
+#define INTERRUPT_HANDLER(name, handler, idt_vector):
+    .global	name        ;\
+    name:               ;\
+        pushal          ;\
+        pushfl          ;\
+        call handler   ;\
+        popfl           ;\
+        popal           ;\
+        iret         
 
-; Debug_:
-;     pushal
-;     //push flags
-;     call Debug
-;     popal
-;     iret
-    
-; Non_maskable_interrupt_:
-;     pushal
-;     //push flags
-;     call Non_maskable_interrupt
-;     popal
-;     iret
+INTERRUPT_HANDLER(divide_by_zero_link,divide_by_zero,0x00);
+INTERRUPT_HANDLER(Debug_link,Debug,0x01);
+INTERRUPT_HANDLER(Non_maskable_interrupt_link,Non_maskable_interrupt,0x02);
+INTERRUPT_HANDLER(Breakpoint_link,Breakpoint,0x03);
+INTERRUPT_HANDLER(Overflow_link,Overflow,0x04);
+INTERRUPT_HANDLER(Bound_Range_Exceeded_link,Bound_Range_Exceeded,0x05);
+INTERRUPT_HANDLER(Invalid_Opcode_link,Invalid_Opcode,0x06);
+INTERRUPT_HANDLER(device_not_available_link,device_not_available,0x07);
+INTERRUPT_HANDLER(Double_Fault_link,Double_Fault,0x08);
+INTERRUPT_HANDLER(Coprocessor_Segment_Overrun_link,Coprocessor_Segment_Overrun,0x09);
+INTERRUPT_HANDLER(Invalid_Task_State_Segment_link,Invalid_Task_State_Segment,0x0A);
+INTERRUPT_HANDLER(Segment_not_present_link,Segment_not_present,0x0B);
+INTERRUPT_HANDLER(Stack_Segment_Fault_link,Stack_Segment_Fault,0x0C);
+INTERRUPT_HANDLER(General_Protection_Fault_link,General_Protection_Fault,0x0D);
+INTERRUPT_HANDLER(Page_Fault_link,Page_Fault,0x0E);
+INTERRUPT_HANDLER(reserved_link,reserved,0x0F);
+INTERRUPT_HANDLER(x87_Floating_Point_Exception_link,x87_Floating_Point_Exception,0x10);
+INTERRUPT_HANDLER(Alignment_Check_link,Alignment_Check,0x11);
+INTERRUPT_HANDLER(Machine_Check_link,Machine_Check,0x12);
+INTERRUPT_HANDLER(SIMD_FloatingPoint_Exception_link,SIMD_FloatingPoint_Exception,0x13);
+INTERRUPT_HANDLER(Virtualization_Exception_link,Virtualization_Exception,0x14);
+INTERRUPT_HANDLER(Control_Protection_Exception_link,Control_Protection_Exception,0x15);
+INTERRUPT_HANDLER(keyboard_interrupt_link,keyboard_interrupt,0x21);
+INTERRUPT_HANDLER(rtc_interrupt_link,rtc_interrupt,0x28);
 
-; Breakpoint_:
-;     pushal
-;     //push flags
-;     call Breakpoint
-;     popal
-;     iret
-
-; Overflow_:
-;     pushal
-;     //push flags
-;     call Overflow
-;     popal
-;     iret
-
-; Bound_Range_Exceeded_:
-;     pushal
-;     //push flags
-;     call Bound_Range_Exceeded
-;     popal
-;     iret
-
-; Invalid_Opcode_:
-;     pushal
-;     //push flags
-;     call Invalid_Opcode
-;     popal
-;     iret
-
-; device_not_available_:
-;     pushal
-;     //push flags
-;     call device_not_available
-;     popal
-;     iret
-    
-
-; Double_Fault_:
-;     pushal
-;     //push flags
-;     call Double_Fault
-;     popal
-;     iret
-
-; Coprocessor_Segment_Overrun_:
-;     pushal
-;     //push flags
-;     call Coprocessor_Segment_Overrun
-;     popal
-;     iret
-
-; Invalid_Task_State_Segment_:
-;     pushal
-;     //push flags
-;     call Invalid_Task_State_Segment
-;     popal
-;     iret
-
-; Segment_not_present_:
-;     pushal
-;     //push flags
-;     call Segment_not_present
-;     popal
-;     iret
-
-; General_Protection_Fault_:
-;     pushal
-;     //push flags
-;     call General_Protection_Fault
-;     popal
-;     iret
-
-; Page_Fault_:
-;     pushal
-;     //push flags
-;     call Page_Fault
-;     popal
-;     iret
-
-; reserved_:
-;     pushal
-;     //push flags
-;     call reserved
-;     popal
-;     iret
-
-; x87_Floating_Point_Exception_:
-;     pushal
-;     //push flags
-;     call x87_Floating_Point_Exception
-;     popal
-;     iret
-
-; Alignment_Check_:
-;     pushal
-;     //push flags
-;     call Alignment_Check
-;     popal
-;     iret
-
-; Machine_Check_:
-;     pushal
-;     //push flags
-;     call Machine_Check
-;     popal
-;     iret
-
-; SIMD_FloatingPoint_Exception_:
-;     pushal
-;     //push flags
-;     call SIMD_FloatingPoint_Exception
-;     popal
-;     iret
-
-; Virtualization_Exception_:
-;     pushal
-;     //push flags
-;     call Virtualization_Exception
-;     popal
-;     iret
-
-; Control_Protection_Exception_:
-;     pushal
-;     //push flags
-;     call Control_Protection_Exception
-;     popal
-;     iret
-
-
-; keyboard_interrupt:
-;     cli
-;     pushal
-;     //push flags
-;     call keyboard_interrupt_ //temp name
-;     popal
-;     sti
-;     iret
-
-; rtc_interrupt:
-;     cli
-;     pushal
-;     //push flags
-;     call rtc_interrupt_     //temp rtc name
-;     popal
-;     sti
-;     iret
