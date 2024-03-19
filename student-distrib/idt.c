@@ -1,6 +1,10 @@
 #include "idt.h"
 #include "lib.h"
 #include "x86_desc.h"
+#include "./devices/keyboard.h"
+// #include "./devices/keyboard.c"
+#include "./devices/RTC.h"
+ // #include "./devices/RTC.c"
 
 void divide_by_zero(){
     printf("EXCEPTION: DIVIDE BY ZERO\n");
@@ -155,8 +159,8 @@ void idt_init(void){
     SET_IDT_ENTRY(idt[0x15],Control_Protection_Exception);
 
     //interrupts for the keyboard and the RTC
-    SET_IDT_ENTRY(idt[0x21],keyboard_interrupt);
-    SET_IDT_ENTRY(idt[0x28],rtc_interrupt);
+    SET_IDT_ENTRY(idt[0x21],keyboard_init);
+    SET_IDT_ENTRY(idt[0x28],RTC_INIT);
     //system calls
-    SET_IDT_ENTRY(idt[0x80],syscall);
+    // SET_IDT_ENTRY(idt[0x80],syscall);
 }

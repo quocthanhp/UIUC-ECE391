@@ -10,16 +10,16 @@
 *  OUTPUT : void 
 */
 int nothing = 696969; 
-void keyboard_int(void){
+void keyboard_init(void){
 /* google says keybaord is usually irq 1*/ 
     enable_irq( 1 );
-    uint16_t scan_code = get_key();
+    uint8_t scan_code = get_key();
     print_code(scan_code);
     /* after each key send eoi */
-    send_eoi(0x21);
+    send_eoi(1);
 }
 
-void print_code(scan_code){
+void print_code(uint8_t scan_code){
     switch (scan_code)
     {
     case 0x01:
@@ -58,15 +58,15 @@ void print_code(scan_code){
     case 0x0C:
         printf("=");
         break;
-    //  case 0x0D:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x0E:
-    //     printf("%d", 1);
-    //     break;   
-    // case 0x0F:
-    //     printf("%d", 1);
-    //     break;
+     case 0x0D:
+        printf("%d", nothing);
+        break;
+    case 0x0E:
+        printf("%d", nothing);
+        break;   
+    case 0x0F:
+        printf("%d", nothing);
+        break;
     case 0x10:
         printf("q");
         break;
@@ -103,9 +103,9 @@ void print_code(scan_code){
     case 0x1B:
         printf("]");
         break;
-    // case 0x1D:
-    //     printf("%d", 1);
-    //     break;
+    case 0x1D:
+        printf("%d", nothing);
+        break;
     case 0x1E:
         printf("a");
         break;
@@ -142,9 +142,9 @@ void print_code(scan_code){
     case 0x29:
         printf("`");
         break;   
-    // case 0x2A:
-    //     printf("%d", 1);
-    //     break;
+    case 0x2A:
+        printf("%d", nothing);
+        break;
     case 0x2B:
         printf("'\'");
         break;
@@ -178,57 +178,57 @@ void print_code(scan_code){
     case 0x35:
         printf("/");
         break;
-    // case 0x36:
-    //     printf("%d", 1);
-    //     break; 
+    case 0x36:
+        printf("%d", nothing);
+        break; 
     case 0x37:
         printf("*");
         break;
-    // case 0x38:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x39:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x3A:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x3B:
-    //     printf("%d", 1);
-    //     break;   
-    // case 0x3C:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x3D:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x3E:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x3F:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x40:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x41:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x42:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x43:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x44:
-    //     printf("%d", 1);
-    //     break;   
-    // case 0x45:
-    //     printf("%d", 1);
-    //     break;
-    // case 0x46:
-    //     printf("%d", 1);
-    //     break;
+    case 0x38:
+        printf("%d", nothing);
+        break;
+    case 0x39:
+        printf("%d", nothing);
+        break;
+    case 0x3A:
+        printf("%d", nothing);
+        break;
+    case 0x3B:
+        printf("%d", nothing);
+        break;   
+    case 0x3C:
+        printf("%d", nothing);
+        break;
+    case 0x3D:
+        printf("%d", nothing);
+        break;
+    case 0x3E:
+        printf("%d", nothing);
+        break;
+    case 0x3F:
+        printf("%d", nothing);
+        break;
+    case 0x40:
+        printf("%d", nothing);
+        break;
+    case 0x41:
+        printf("%d", nothing);
+        break;
+    case 0x42:
+        printf("%d", nothing);
+        break;
+    case 0x43:
+        printf("%d", nothing);
+        break;
+    case 0x44:
+       printf("%d", nothing);
+        break;   
+    case 0x45:
+        printf("%d", nothing);
+        break;
+    case 0x46:
+        printf("%d", nothing);
+        break;
     case 0x47:
         printf("%d", 7);
         break;
@@ -274,14 +274,14 @@ void print_code(scan_code){
     //  case 0x55:
     //     printf("%d", 1);
     //     break;
-    // case 0x56:
-    //     printf("%d", 1);
-    //     break;   
-    // case 0x57:
-    //     printf("%d", 1);
-    //     break;
-    default:
+    case 0x56:
         printf("%d", nothing);
+        break;   
+    case 0x57:
+        printf("%d", nothing);
+        break;
+    default:
+        
         break;
     }
 
@@ -502,8 +502,8 @@ void print_code(scan_code){
     //     keycodes[0xD6] =NULL;
     //     keycodes[0xD7] =NULL;
 
-uint16_t get_key(void){
-    uint16_t code;
+uint8_t get_key(void){
+    uint8_t code;
     inb(Keyboard_port, code);
 
     return code;

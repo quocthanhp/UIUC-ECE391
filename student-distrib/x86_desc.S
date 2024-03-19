@@ -75,7 +75,7 @@ gdt_ptr:
     .quad 0x00CFF2000000FFFF
 
     # Set up an entry for TSS
-    .quad 0x00CF89000000FFFF
+    # .quad 0x00CF89000000FFFF
 tss_desc_ptr:
     .quad 0
 

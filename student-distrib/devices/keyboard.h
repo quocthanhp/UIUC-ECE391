@@ -11,12 +11,13 @@
 
 #define Keyboard_port 0x60
 
-uint16_t keycodes[0xD7];
+// uint16_t keycodes[0xD7];
+// uint8_t scan_code;
 
 
 /* init functiuon for keybaord */
 void keyboard_init(void);
-
-uint16_t get_key(void);
+void print_code(uint8_t scan_code);
+uint8_t get_key(void);
 
 #endif

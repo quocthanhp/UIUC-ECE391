@@ -24,3 +24,4 @@ uint32_t RTC_INIT(void){
     enable_irq(8);
     return 0;
 }
+
