@@ -8,7 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
-#include "keyboard.h"
+#include "devices/keyboard.h"
 
 #define RUN_TESTS
 
@@ -151,7 +151,7 @@ void entry(unsigned long magic, unsigned long addr) {
     sti();*/
 
     /* init the keyboard */
-    keyboard_init();
+    //keyboard_init();
 
 #ifdef RUN_TESTS
     /* Run tests */

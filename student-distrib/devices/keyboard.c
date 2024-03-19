@@ -1,8 +1,8 @@
 #include "../lib.h"
 #include "keyboard.h"
 #include "../i8259.h"
-#include "string.h"
-#include "stdio.h"
+// #include "string.h"
+// #include "../lib.c" 
 
 /* straight from osDEV */
 /* DESC : Init the keyboard
