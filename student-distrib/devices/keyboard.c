@@ -29,7 +29,7 @@ void keyboard_int(void){
         keycodes[0x0B] = '0';
         keycodes[0x0C] = '-';
         keycodes[0x0D] = '=';
-        keycodes[0x0E] = nothing;//backspace
+        keycodes[0x0E] = nothing; //backspace
         keycodes[0x0F] = nothing; //tab
         keycodes[0x10] = 'Q';
         keycodes[0x11] = 'W';
@@ -43,7 +43,7 @@ void keyboard_int(void){
         keycodes[0x19] = 'P';
         keycodes[0x1A] = '[';
         keycodes[0x1B] = ']';
-        keycodes[0x1C] = nothing;//enter pressed
+        keycodes[0x1C] = nothing; //enter pressed
         keycodes[0x1D] = nothing; //left ctrl
         keycodes[0x1E] = 'A';
         keycodes[0x1F] = 'S';
@@ -57,7 +57,7 @@ void keyboard_int(void){
         keycodes[0x27] = ';';
         keycodes[0x28] = "'";
         keycodes[0x29] = '`' ;
-        keycodes[0x2A] = nothing;//left shift
+        keycodes[0x2A] = nothing; //left shift
         keycodes[0x2B] = " '\' ";
         keycodes[0x2C] = "Z";
         keycodes[0x2D] = 'X';
