@@ -9,10 +9,19 @@
 *  INPUT : void
 *  OUTPUT : void 
 */
-int nothing = 696969; 
+
 void keyboard_init(void){
+    enable_irq(1);
+}
+
+/* keybaord interrupt function
+*  print scancode to screen each time a key is pressed
+*
+*/
+int nothing = 696969; 
+void keyboard_interrupt(void){
 /* google says keybaord is usually irq 1*/ 
-    enable_irq( 1 );
+/* add diable all irq function */
     uint8_t scan_code = get_key();
     print_code(scan_code);
     /* after each key send eoi */
@@ -502,6 +511,8 @@ void print_code(uint8_t scan_code){
     //     keycodes[0xD6] =NULL;
     //     keycodes[0xD7] =NULL;
 
+
+/* helper */
 uint8_t get_key(void){
     uint8_t code;
     inb(Keyboard_port, code);

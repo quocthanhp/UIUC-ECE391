@@ -17,8 +17,12 @@
 // #define STATUSC 0x8C
 
 /* init RTC chip */
-uint32_t RTC_INIT(void);
+
+void RTC_INIT(void);
+
 /* RTC freqency changing function */
-// void RTC_FREQ(uint32_t freq);
+
+void rtc_interrupt(void);
 
 #endif
+

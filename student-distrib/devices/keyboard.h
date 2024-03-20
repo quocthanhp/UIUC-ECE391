@@ -17,6 +17,7 @@
 
 /* init functiuon for keybaord */
 void keyboard_init(void);
+void keyboard_interrupt(void);
 void print_code(uint8_t scan_code);
 uint8_t get_key(void);
 

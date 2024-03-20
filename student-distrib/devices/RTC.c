@@ -3,15 +3,18 @@
 #include "../i8259.h"
 #include "../lib.h"
 
-
+/* init rtc */
+void RTC_INIT(void){
+    enable_irq(8);
+}
 
 /* straight from osDEV */
-/* DESC : Init the RTC default rate 1024hz
+/* DESC : set RTC default rate 1024hz
 *  INPUT : void
 *  OUTPUT : -1/0 
 */
 /* ref: https://wiki.osdev.org/RTC */
-uint32_t RTC_INIT(void){
+void rtc_interrupt(void){
     /* irq is 8*/
     uint32_t rate = 1024;
     disable_irq(8);
@@ -22,6 +25,6 @@ uint32_t RTC_INIT(void){
     outb((prev & 0xF0) | rate, CMOS_DATA);
 
     enable_irq(8);
-    return 0;
 }
+
 
