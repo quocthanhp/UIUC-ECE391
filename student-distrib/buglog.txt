@@ -1,0 +1,9 @@
+Group60 BUG LOG
+
+BUG1:
+description:
+    didn't include the rtc.h and keyboard.h in idt.c correctly
+    because we move the file concerning device into a new directory
+    so we should use #include devices/keyboard.h instead of just #include keyboard.h
+
+BUG2:
