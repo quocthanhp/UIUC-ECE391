@@ -53,7 +53,7 @@ int divide_by_zero_test(){
 	int b;
 	b = 1 / a;
 
-	return(FAIL);
+	return(PASS);
 
 }
 

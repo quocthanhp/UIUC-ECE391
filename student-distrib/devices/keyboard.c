@@ -518,7 +518,7 @@ void print_code(uint8_t scan_code){
 /* helper */
 uint8_t get_key(void){
     uint8_t code;
-    inb(Keyboard_port, code);
+    code = inb(Keyboard_port);
 
     return code;
 

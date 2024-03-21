@@ -5,6 +5,7 @@
 
 /* init rtc */
 void RTC_INIT(void){
+    
     enable_irq(8);
 }
 
@@ -16,15 +17,23 @@ void RTC_INIT(void){
 /* ref: https://wiki.osdev.org/RTC */
 void rtc_interrupt(void){
     /* irq is 8*/
-    uint32_t rate = 1024;
-    disable_irq(8);
+    uint32_t rate = 0x10;
+    cli();
+    
+    // disable_irq(8);
 
     outb(STATUSA, CMOS_CMD);
     char prev = inb(CMOS_DATA);
     outb(STATUSA, CMOS_CMD);
     outb((prev & 0xF0) | rate, CMOS_DATA);
 
-    enable_irq(8);
+    //maybe needed?
+    //confirm wtih TA
+    outb(STATUSC, CMOS_CMD);
+    inb(CMOS_DATA);
+
+    // enable_irq(8);
+    sti();
 }
 
 

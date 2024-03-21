@@ -10,6 +10,7 @@
 #include "tests.h"
 #include "devices/keyboard.h"
 #include "idt.h"
+#include "nPage.h"
 
 #define RUN_TESTS
 
@@ -150,12 +151,16 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    printf("Enabling Interrupts\n");
+    sti();
 
     /* init the keyboard */
-    enable_irq( 0 );
+    // enable_irq( 0 );
     keyboard_init();
+    RTC_INIT();
+
+    pageInit();
+
 
 #ifdef RUN_TESTS
     /* Run tests */
