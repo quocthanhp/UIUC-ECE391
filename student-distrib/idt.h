@@ -41,8 +41,5 @@ extern void SIMD_FloatingPoint_Exception(void);
 extern void Virtualization_Exception(void);
 
 extern void Control_Protection_Exception(void);
-<<<<<<< HEAD
+
 #endif
-=======
-#endif
->>>>>>> 58f0cff59065627ef2d5d11627ec8a92a095b624

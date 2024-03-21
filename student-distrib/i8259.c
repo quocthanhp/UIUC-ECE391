@@ -41,12 +41,13 @@ void enable_irq(uint32_t irq_num) {
     if( irq_num >= 15){return;}
 
     if (irq_num >= 8){
-        slave_mask &= !(1 << (irq_num + 8));
+        //saving the previous state
+        slave_mask &= ~(1 << (irq_num - 8));
         outb(slave_mask, SLAVE_8259_DATA);
     }
 
     else{
-        master_mask &= !(1 << irq_num);
+        master_mask &= ~(1 << irq_num);
         outb(master_mask, MASTER_8259_DATA);
     }
 }
@@ -56,12 +57,12 @@ void disable_irq(uint32_t irq_num) {
     if( irq_num >= 15){return;}
     
     if (irq_num >= 8){
-        slave_mask |= !(1 << (irq_num + 8));
+        slave_mask |= ~(1 << (irq_num - 8));
         outb(slave_mask, SLAVE_8259_DATA);
     }
 
     else{
-        master_mask |= !(1 << irq_num);
+        master_mask |= ~(1 << irq_num);
         outb(master_mask, MASTER_8259_DATA);
     }
 }
@@ -69,8 +70,8 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     if(irq_num >= 8){
-		outb(EOI + irq_num, SLAVE_8259_CMD);
-        outb(EOI + irq_num, MASTER_8259_CMD);
+		outb(EOI + (irq_num -8), SLAVE_8259_CMD);
+        outb(EOI + 2, MASTER_8259_CMD);
     }
     else
     outb(EOI + irq_num, MASTER_8259_CMD);

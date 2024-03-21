@@ -47,11 +47,13 @@ int idt_test(){
 
 // add more tests here
 
-void divide_by_zero_test(){
+int divide_by_zero_test(){
 	TEST_HEADER;
 	int a = 0;
 	int b;
 	b = 1 / a;
+
+	return(FAIL);
 
 }
 

@@ -101,5 +101,7 @@ void pageInit()
         page_directory[i].pde_MB.isPat = 0;
         
     }
+
+    enable_paging((unsigned int*) page_directory);
     return;
 }

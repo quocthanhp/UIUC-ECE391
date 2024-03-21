@@ -21,12 +21,4 @@ void keyboard_interrupt(void);
 void print_code(uint8_t scan_code);
 uint8_t get_key(void);
 
-<<<<<<< HEAD
-uint16_t get_key(void);
-
-void keyboard_interrupt(void);
-
 #endif
-=======
-#endif
->>>>>>> 58f0cff59065627ef2d5d11627ec8a92a095b624

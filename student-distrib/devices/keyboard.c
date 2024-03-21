@@ -9,20 +9,9 @@
 *  INPUT : void
 *  OUTPUT : void 
 */
-<<<<<<< HEAD
-int nothing = 696969; 
-void keyboard_int(void){
-/* google says keybaord is usually irq 1*/ 
-    enable_irq(1);
-    uint8_t scan_code = get_key();
-    print_code(scan_code);
-    /* after each key send eoi */
-    send_eoi(1);
-=======
 
 void keyboard_init(void){
     enable_irq(1);
->>>>>>> 58f0cff59065627ef2d5d11627ec8a92a095b624
 }
 
 /* keybaord interrupt function
@@ -32,13 +21,14 @@ void keyboard_init(void){
 int nothing = 696969; 
 void keyboard_interrupt(void){
 /* google says keybaord is usually irq 1*/ 
-
-    uint8_t scan_code = get_key();
     cli();
+    uint8_t scan_code = get_key();
+    
     print_code(scan_code);
-    sti();
+    
     /* after each key send eoi */
     send_eoi(1);
+    sti();
 }
 
 void print_code(uint8_t scan_code){
@@ -533,10 +523,3 @@ uint8_t get_key(void){
     return code;
 
 }
-<<<<<<< HEAD
-
-void keyboard_interrupt(){
-    
-}
-=======
->>>>>>> 58f0cff59065627ef2d5d11627ec8a92a095b624
