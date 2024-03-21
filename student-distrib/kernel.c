@@ -11,6 +11,7 @@
 #include "devices/keyboard.h"
 #include "idt.h"
 #include "nPage.h"
+#include "devices/RTC.h"
 
 #define RUN_TESTS
 
@@ -144,6 +145,13 @@ void entry(unsigned long magic, unsigned long addr) {
 
     idt_init();
 
+    /* init the keyboard */
+    // enable_irq( 0 );
+    keyboard_init();
+    // RTC_INIT();
+
+    pageInit();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -154,17 +162,9 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
 
-    /* init the keyboard */
-    // enable_irq( 0 );
-    keyboard_init();
-    RTC_INIT();
-
-    pageInit();
-
-
 #ifdef RUN_TESTS
     /* Run tests */
-     launch_tests();
+    //  launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 

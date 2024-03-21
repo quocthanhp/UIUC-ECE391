@@ -33,7 +33,7 @@ void i8259_init(void) {
     outb(a1, MASTER_8259_DATA);
     outb(a2, SLAVE_8259_DATA);
 
-    // enable_irq( 2 ); // not sure what goes here. i think pin 2
+    enable_irq( 2 ); // not sure what goes here. i think pin 2
 }
 
 /* Enable (unmask) the specified IRQ */
