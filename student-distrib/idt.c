@@ -214,16 +214,24 @@ void ControlProtectionException(){
     while(1);
 }
     
+/*
+idt_init
+initializing and mapping for exception handling
+-
+
+*/
 void idt_init(void){
-    int i;
+    int i;                                      
     for(i = 0; i < NUM_VEC; i++){
         idt[i].seg_selector = KERNEL_CS;
-        if(i < 32){
+        if(i < 32){//check if the vector is the exception 
             idt[i].dpl = 0;
             
-        }else{
+        }else{                              
             idt[i].dpl = 3;
         }
+
+        //set signals
         idt[i].reserved0 = 0;
         idt[i].reserved1 = 1;
         idt[i].reserved2 = 1;
