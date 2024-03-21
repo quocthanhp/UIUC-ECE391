@@ -12,7 +12,7 @@ void pageInit()
     for (i = 0; i < NUM_PTE; i++)
     {
         // flags for video memory
-        if ((page_directory[i].pde_KB.pageTableBaseAddr >= VIDEO_MEMORY_INDEX) || (page_directory[i].pde_KB.pageTableBaseAddr <= VIDEO_MEMORY_DIRECT_INDEX))
+        if ((i >= (VIDEO_MEMORY_INDEX >> 10)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 10)))
         {
             page_table[i].isPresent = 1;
         } else {
@@ -32,7 +32,7 @@ void pageInit()
         page_table[i].isUserSupervisor = 0;
         
 
-        if ((page_directory[i].pde_KB.pageTableBaseAddr >= VIDEO_MEMORY_INDEX) || (page_directory[i].pde_KB.pageTableBaseAddr <= VIDEO_MEMORY_DIRECT_INDEX)) 
+        if ((i >= (VIDEO_MEMORY_INDEX >> 10)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 10))) 
             page_table[i].pageBaseAddr = VIDEO_MEMORY_INDEX;
         else
             page_table[i].pageBaseAddr = i;

@@ -12,9 +12,9 @@
 #define PAGE_TABLE_ADDR_OFFSET_4MB    22
 
 // video memory index 
-#define VIDEO_MEMORY_INDEX  0xB8 // 0xb0  //needs to be changed
+#define VIDEO_MEMORY_INDEX  0xB8000 // 0xb0  //needs to be changed
 // direct access Index to video memory
-#define VIDEO_MEMORY_DIRECT_INDEX 0xB9 // 0xb1 //needs to be changed
+#define VIDEO_MEMORY_DIRECT_INDEX 0xB9000 // 0xb1 //needs to be changed
 
 
 // this is to call initialization of page
