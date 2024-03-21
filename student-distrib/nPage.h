@@ -1,8 +1,8 @@
 #ifndef _PAGING_H
 #define _PAGING_H
 
-#include "lib/lib.h"
-#include "lib/types.h"
+#include "lib.h"
+#include "types.h"
 #include "x86_desc.h"
 
 

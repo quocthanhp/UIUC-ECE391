@@ -21,9 +21,11 @@ void keyboard_init(void){
 int nothing = 696969; 
 void keyboard_interrupt(void){
 /* google says keybaord is usually irq 1*/ 
-/* add diable all irq function */
+
     uint8_t scan_code = get_key();
+    cli();
     print_code(scan_code);
+    sti();
     /* after each key send eoi */
     send_eoi(1);
 }
