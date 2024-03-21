@@ -1,13 +1,16 @@
-#define ASM     1
+#define ASM  1
+#include "handler.h"
 #include "idt.c"
 #include "idt.h"
 
-#define INTERRUPT_HANDLER(name, handler, idt_vector):
+.text
+
+INTERRUPT_HANDLER(name, handler, idt_vector):       \
     .global	name        ;\
     name:               ;\
         pushal          ;\
         pushfl          ;\
-        call handler   ;\
+        call handler    ;\
         popfl           ;\
         popal           ;\
         iret         
@@ -37,3 +40,4 @@ INTERRUPT_HANDLER(Control_Protection_Exception_link,Control_Protection_Exception
 INTERRUPT_HANDLER(keyboard_interrupt_link,keyboard_interrupt,0x21);
 INTERRUPT_HANDLER(rtc_interrupt_link,rtc_interrupt,0x28);
 
+.end

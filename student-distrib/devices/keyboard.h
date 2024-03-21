@@ -19,4 +19,6 @@ void keyboard_init(void);
 
 uint16_t get_key(void);
 
+void keyboard_interrupt(void);
+
 #endif

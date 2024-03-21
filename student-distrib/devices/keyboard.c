@@ -12,11 +12,11 @@
 int nothing = 696969; 
 void keyboard_int(void){
 /* google says keybaord is usually irq 1*/ 
-    enable_irq( 1 );
-    uint16_t scan_code = get_key();
+    enable_irq(1);
+    uint8_t scan_code = get_key();
     print_code(scan_code);
     /* after each key send eoi */
-    send_eoi(0x21);
+    send_eoi(1);
 }
 
 void print_code(scan_code){
@@ -508,4 +508,8 @@ uint16_t get_key(void){
 
     return code;
 
+}
+
+void keyboard_interrupt(){
+    
 }
