@@ -17,12 +17,18 @@
 #define STATUSC 0x0C
 
 /* init RTC chip */
-
 void RTC_INIT(void);
 
 /* RTC freqency changing function */
-
 void rtc_interrupt(void);
+
+/* Cp2 syscalls RTC driver*/
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes);
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t rtc_open(const uint8_t* filename);
+int32_t rtc_close(int32_t fd);
+/* chnage frequencey */
+int32_t rtc_freq(int32_t freq);
 
 #endif
 
