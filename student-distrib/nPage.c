@@ -3,6 +3,17 @@
 #include "paging.h"
 #include "x86_desc.h"
 
+
+/*
+ * page INIT
+ * sets up the paging structures (page table and page directory)
+ * structs for the page table and page directory defined in 0x86_desc.h
+ * calls enable paging
+ * INPUTS:NONE
+ * OUTPUTS:NONE
+ * SIDE EFFECTS: enables paging to be used by the OS
+ * 
+ */
 void pageInit()
 {
     
@@ -32,8 +43,6 @@ void pageInit()
 
 
     // 4MB-8MB memory as 4mb pages
-    
-    
     page_directory[1].pde_MB.isPageSize = 1;
     page_directory[1].pde_MB.pageBaseAddr = 0x400000 >> 22;
     page_directory[1].pde_MB.isPresent = 1;
@@ -41,7 +50,7 @@ void pageInit()
     page_directory[1].pde_MB.isGlobal = 0;
     page_directory[1].pde_MB.isUserSupervisor = 0;
 
-
+    //enable paging by modifying the values within the correct registers
     enable_paging((unsigned int *) page_directory);
     return;
 }
