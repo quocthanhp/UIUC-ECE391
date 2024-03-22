@@ -4,10 +4,6 @@
 #include "lib.h"
 #include "types.h"
 
-// Table address offset for 4KB pages
-#define PAGE_TABLE_ADDR_OFFSET_4KB    12
-// Table address offset for 4MB pages
-#define PAGE_TABLE_ADDR_OFFSET_4MB    22
 
 // video memory index 
 #define VIDEO_MEMORY_INDEX  0xB8000 // 0xb0  //needs to be changed

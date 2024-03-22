@@ -298,6 +298,8 @@ void print_code(uint8_t scan_code){
     }
 
 }
+
+//char keycodes[0xD7][1];
     //     keycodes[0x01] = nothing; //escape pressed
     //     keycodes[0x02] = '1';
     //     keycodes[0x03] = '2';
