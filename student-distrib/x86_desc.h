@@ -216,7 +216,7 @@ do {                                    \
 
 #define NUM_PDE                 1024
 #define NUM_PTE                 1024
-#define PAGE_SIZE_4KB           0x1000
+#define PAGE_SIZE_4KB           4096
 
 
 // Page Directory Entry structure for a 4 KB Page Table in an x86 system.
@@ -263,6 +263,7 @@ typedef union PageDirectoryEntry4MB {
 typedef union PageDirectoryEntry {
     PageDirectoryEntry4KB pde_KB;
     PageDirectoryEntry4MB pde_MB;
+    uint32_t value;
 } pde_t;
 
 // Page Table Entry structure for a 4 KB Page Table in an x86 system

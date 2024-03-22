@@ -1,21 +1,29 @@
 #define ASM     1
 
-.global enable_paging
+.global enable_paging, load_paging
 
 .text
 
-enable_paging:          
-    pushl %ebp                 
-    movl %esp, %ebp            
-    movl 8(%esp), %eax         
-    movl %eax, %cr3 
+load_paging:
 
-    movl %cr0, %eax            
-    orl  $0x80000001, %eax       
-    movl %eax, %cr0    
-         
+    movl %eax, %cr3 
+    ret
+
+enable_paging:            
+
+    pushl %ebp                 
+    movl %esp, %ebp
+    movl 8(%esp), %ecx
+
     movl %cr4, %eax            
     orl  $0x00000010, %eax       
-    movl %eax, %cr4                    
+    movl %eax, %cr4       
 
+    movl %ecx, %cr3
 
+    movl %cr0, %eax            
+    orl  $0x80000000, %eax       
+    movl %eax, %cr0    
+
+    leave 
+    ret
