@@ -12,7 +12,7 @@ void pageInit()
     for (i = 0; i < NUM_PTE; i++)
     {
         // flags for video memory
-        if ((i >= (VIDEO_MEMORY_INDEX >> 10)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 10)))
+        if ((i >= (VIDEO_MEMORY_INDEX >> 12)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 12)))
         {
             page_table[i].isPresent = 1;
         } else {
@@ -20,9 +20,29 @@ void pageInit()
         }
         
         page_table[i].isGlobal = 0;
-        page_table[i].isDirty = 0;
-        page_table[i].isReadWrite = 0;
-        page_table[i].isAccessed = 0;
+        if ((i >= (VIDEO_MEMORY_INDEX >> 12)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 12)))
+        {
+            page_table.isDirty = 1;
+        }
+        else{
+            page_table[i].isDirty = 0;
+        }
+        
+        if ((i >= (VIDEO_MEMORY_INDEX >> 12)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 12)))
+        {
+            page_table[i].isReadWrite = 1;
+        }
+        else{
+            page_table[i].isReadWrite = 0;
+        }
+
+        if ((i >= (VIDEO_MEMORY_INDEX >> 12)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 12))){
+            page_table[i].isAccessed = 1;
+        }
+        else{
+            page_table[i].isAccessed = 0;
+        }
+        
 
         page_table[i].isWriteThrough = 0;
         page_table[i].isCacheDisabled = 0;
@@ -32,8 +52,8 @@ void pageInit()
         page_table[i].isUserSupervisor = 0;
         
 
-        if ((i >= (VIDEO_MEMORY_INDEX >> 10)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 10))) 
-            page_table[i].pageBaseAddr = VIDEO_MEMORY_INDEX;
+        if ((i >= (VIDEO_MEMORY_INDEX >> 12)) || (i <= (VIDEO_MEMORY_DIRECT_INDEX >> 12))) 
+            page_table[i].pageBaseAddr = (VIDEO_MEMORY_INDEX >> 12);
         else
             page_table[i].pageBaseAddr = i;
     }
