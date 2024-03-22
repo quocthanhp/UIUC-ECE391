@@ -42,7 +42,7 @@ int terminal_open(const uint8_t * filename){
  * reads from keyboard buffer
  * loads keyboard buffer value into a terminal buffer
  * INPUTS:
- * OUTPUTS: number of bytes read
+ * OUTPUTS: number of bytes read, -1 if no bytes were read.
  * SIDE EFFECTS: none
  */
 
