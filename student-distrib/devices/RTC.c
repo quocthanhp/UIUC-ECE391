@@ -72,26 +72,47 @@ return -1 to indicate failure since the file system is read-only.
 The call returns the number of bytes written, or -1 on failure.
 */
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
+if(buf == NULL || nbytes != 4) return -1;  // if buff is null ptr or it is not 4 bytes return fail.
+int setfrq = rtc_freq(*(int32_t*) buf);
+return setfrq;
 
 }
 
+/* rtc_open  
+* I/O   I: NONE
+*       O: NONE
+*           
+RTC interrupt rate should be set to a default value of 2 Hz (2 interrupts per second) 
+when the RTC device is opened.
+*/
 int32_t rtc_open(const uint8_t* filename){
-
+    rtc_freq(2); // set to 2hz (lowest freq)
+    return 0;
 }
 
-int32_t rtc_close(int32_t fd){
+/* rtc_close  
+* I/O   I: NONE
+*       O: NONE
+*/
+int32_t rtc_close(int32_t fd){ return 0;}
 
-}
 /* rtc_freq
 *       I:  freq - the frequency for RTC to be set
 *
 *       O:  
 *           0/-1 - success/fail
+*   ref: https://wiki.osdev.org/RTC
 *....................................NOT DONE............................
 */ 
 int32_t rtc_freq(int32_t freq){
     // check max min and power of 2
-    if(freq < 2 || freq > 1024 || ((freq % 2) != 0)) return -1;
+    if(freq < 2 || freq > 1024 || ((freq % 2) != 0)) return -1; // sanity check the input
+    freq &= 0x0F;                                               // freq must be between 2 and 1024
 
+
+    outb(STATUSA, CMOS_CMD);
+    char prev = inb(CMOS_DATA);
+    outb(STATUSA, CMOS_CMD);
+    outb(((prev & 0xF0) | freq), CMOS_DATA);
     return 0;
 }
