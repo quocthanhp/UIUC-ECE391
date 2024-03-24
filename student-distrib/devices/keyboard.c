@@ -1,15 +1,30 @@
 #include "../lib.h"
 #include "keyboard.h"
 #include "../i8259.h"
+#include "../terminal.h"
 // #include "string.h"
 // #include "../lib.c" 
 
+
+unsigned char backspace_character = ' ';
+unsigned char lowercase_characters[54] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , '    '  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , "'" , "`" , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
+
+unsigned char upppercase_characters[54]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , '    '  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
+
+/*flags to be used for special cases*/
+int caps_lock_flag = 0; //turned off (0) by default 
+int shift_flag;
+int alt_flag;
+int backspace_flag;
+int control_flag;
+int backspace_flag;
+int l_flag;
+int enter_flag =0;
 /* straight from osDEV */
 /* DESC : Init the keyboard
 *  INPUT : void
 *  OUTPUT : void 
 */
-
 void keyboard_init(void){
     enable_irq(1);
 }
@@ -18,286 +33,421 @@ void keyboard_init(void){
 *  print scancode to screen each time a key is pressed
 *
 */
-int nothing = 696969; 
+int nothing = NULL; 
 void keyboard_interrupt(void){
+
 /* google says keybaord is usually irq 1*/ 
-    cli();
+    // cli();
+
     uint8_t scan_code = get_key();
-    
-    print_code(scan_code);
+
+    //case statement 
+    //special key case   
+    //default printing letters and numbers
+     
+    switch (scan_code){
+        case CAPS_LOCK_PRESSED:
+            //switches the caps loack flag to 1 or 0
+            caps_lock_flag = caps_lock_flag == 0 ? 1 : 0;
+
+        case LEFT_SHIFT_PRESSED:
+            // shift_flag = shift_flag == 0 ? 1 : 0;
+            shift_flag = 1;
+            //set shift flag to 1
+            
+        case RIGHT_SHIFT_PRESSED:
+            //set shift flag to 1
+            shift_flag = 1;
+
+        case LEFT_SHIFT_RELEASED:
+            //set shift flag to 0
+            shift_flag = 0;
+
+        case RIGHT_SHIFT_RELEASED:
+            //set shift flag to 0
+            shift_flag = 0;
+
+        case ALT_PRESSED:
+            //set alt flag to 1
+            alt_flag = 0;
+        case ALT_RELEASED:
+            //set alt flag to 0
+            alt_flag = 0;
+        
+        case BACKSPACE_PRESSED:
+            backspace_flag = 1;
+            terminal_remove_from_buffer();
+        
+        case BACKSPACE_RELEASED:
+            backspace_flag = 0;
+
+        case LEFT_CONTROL_PRESSED:
+            control_flag = 1;
+        
+        case RIGHT_CONTROL_PRESSED:
+            control_flag = 1;
+        
+        case LEFT_CONTROL_RELEASED:
+            control_flag = 0;
+
+        case RIGHT_CONTROL_RELEASED:
+            control_flag = 0;
+
+        case L_PRESSED:
+            l_flag = 1;
+        
+        case L_RELEASED:
+            l_flag = 0;
+
+        case ENTER_PRESSED:
+            enter_flag =1; 
+        
+        case ENTER_RELEASED:
+            enter_flag = 0;
+        
+        default:
+
+            if(caps_lock_flag == 0) {
+
+                //shift pressed while caps lock is off
+                if(shift_flag == 1){
+                    putc(uppercase_characters[scan_code]);
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
+
+                //shift isn't pressed while caps lock is off
+                else{
+                    putc(lowercase_characters[scan_code]);
+                    //function to add to buffer
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
+            }
+
+            else if(caps_lock_flag == 1){
+
+                //shift pressed while caps lock is on
+                if(shift_flag == 1){
+                    putc(lowercase_characters[scan_code]);
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
+                
+                else{
+                    putc(uppercase_characters[scan_code]);
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
+            }
+
+
+            // else if(shift_flag == 0) {
+            //     putc(lowercase_characters[scan_code]);
+            //     //function to add to buffer
+            //     terminal_update_buffer(lowercase_characters[scan_code]);
+            // }
+
+            else if(caps_lock_flag == 1){
+                putc(uppercase_characters[scan_code]);
+                //function to add to buffer
+                terminal_update_buffer(lowercase_characters[scan_code]);
+            }
+
+            // else if(shift_flag == 1){
+            //     putc(uppercase_characters[scan_code]);
+            //     //function to add to buffer
+            //     terminal_update_buffer(lowercase_characters[scan_code]);
+            // }
+
+            else if(control_flag == 1){
+                if(scan_code == L_PRESSED){
+                    clear_terminal();
+                }
+            }
+            else if(backspace_flag ==1){
+                putc(backspace_character);
+            }
+
+
+    }
+   // print_code(scan_code);
     
     /* after each key send eoi */
     send_eoi(1);
-    sti();
+    // sti();
+    //update terminal buffer 
+    //print the actual character as well using putc 
 }
 
-void print_code(uint8_t scan_code){
-    switch (scan_code)
-    {
-    case 0x01:
-        printf("%d", 1);
-        break;
-    case 0x02:
-        printf("%d", 2);
-        break;
-    case 0x03:
-        printf("%d", 3);
-        break;
-     case 0x04:
-        printf("%d", 4);
-        break;
-    case 0x05:
-        printf("%d", 5);
-        break;   
-    case 0x06:
-        printf("%d", 6);
-        break;
-    case 0x07:
-        printf("%d", 7);
-        break;
-    case 0x08:
-        printf("%d", 8);
-        break;
-    case 0x09:
-        printf("%d", 9);
-        break;
-    case 0x0A:
-        printf("%d", 0);
-        break;
-    case 0x0B:
-        printf("-");
-        break;
-    case 0x0C:
-        printf("=");
-        break;
-     case 0x0D:
-        printf("%d", nothing);
-        break;
-    case 0x0E:
-        printf("%d", nothing);
-        break;   
-    case 0x0F:
-        printf("%d", nothing);
-        break;
-    case 0x10:
-        printf("q");
-        break;
-    case 0x11:
-        printf("w");
-        break;
-    case 0x12:
-        printf("e");
-        break;   
-    case 0x13:
-        printf("r");
-        break;
-    case 0x14:
-        printf("t");
-        break;
-    case 0x15:
-        printf("y");
-        break;
-     case 0x16:
-        printf("u");
-        break;
-    case 0x17:
-        printf("i");
-        break;   
-    case 0x18:
-        printf("o");
-        break;
-    case 0x19:
-        printf("p");
-        break;
-    case 0x1A:
-        printf("[");
-        break;
-    case 0x1B:
-        printf("]");
-        break;
-    case 0x1D:
-        printf("%d", nothing);
-        break;
-    case 0x1E:
-        printf("a");
-        break;
-    case 0x1F:
-        printf("s");
-        break;
-    case 0x20:
-        printf("d");
-        break;   
-    case 0x21:
-        printf("f");
-        break;
-    case 0x22:
-        printf("g");
-        break;
-    case 0x23:
-        printf("h");
-        break;
-    case 0x24:
-        printf("j");
-        break; 
-    case 0x25:
-        printf("k");
-        break;
-    case 0x26:
-        printf("l");
-        break;
-    case 0x27:
-        printf(";");
-        break;
-     case 0x28:
-        printf("'");
-        break;
-    case 0x29:
-        printf("`");
-        break;   
-    case 0x2A:
-        printf("%d", nothing);
-        break;
-    case 0x2B:
-        printf("'\'");
-        break;
-    case 0x2C:
-        printf("z");
-        break;
-    case 0x2D:
-        printf("x");
-        break;
-    case 0x2E:
-        printf("c");
-        break;
-    case 0x2F:
-        printf("v");
-        break;
-    case 0x30:
-        printf("b");
-        break;
-    case 0x31:
-        printf("n");
-        break;
-    case 0x32:
-        printf("m");
-        break;   
-    case 0x33:
-        printf(",");
-        break;
-    case 0x34:
-        printf(".");
-        break;
-    case 0x35:
-        printf("/");
-        break;
-    case 0x36:
-        printf("%d", nothing);
-        break; 
-    case 0x37:
-        printf("*");
-        break;
-    case 0x38:
-        printf("%d", nothing);
-        break;
-    case 0x39:
-        printf("%d", nothing);
-        break;
-    case 0x3A:
-        printf("%d", nothing);
-        break;
-    case 0x3B:
-        printf("%d", nothing);
-        break;   
-    case 0x3C:
-        printf("%d", nothing);
-        break;
-    case 0x3D:
-        printf("%d", nothing);
-        break;
-    case 0x3E:
-        printf("%d", nothing);
-        break;
-    case 0x3F:
-        printf("%d", nothing);
-        break;
-    case 0x40:
-        printf("%d", nothing);
-        break;
-    case 0x41:
-        printf("%d", nothing);
-        break;
-    case 0x42:
-        printf("%d", nothing);
-        break;
-    case 0x43:
-        printf("%d", nothing);
-        break;
-    case 0x44:
-       printf("%d", nothing);
-        break;   
-    case 0x45:
-        printf("%d", nothing);
-        break;
-    case 0x46:
-        printf("%d", nothing);
-        break;
-    case 0x47:
-        printf("%d", 7);
-        break;
-    case 0x48:
-        printf("%d", 8);
-        break; 
-    case 0x49:
-        printf("%d", 9);
-        break;
-    case 0x4A:
-        printf("-");
-        break;
-    case 0x4B:
-        printf("%d", 4);
-        break;
-     case 0x4C:
-        printf("%d", 5);
-        break;
-    case 0x4D:
-        printf("%d", 6);
-        break;   
-    case 0x4E:
-        printf("+");
-        break;
-    case 0x4F:
-        printf("%d", 1);
-        break;
-    case 0x50:
-        printf("%d", 2);
-        break;
-    case 0x51:
-        printf("%d", 3);
-        break;
-    case 0x52:
-        printf("%d", 0);
-        break;
-    // case 0x53:
-    //     printf(".");
-    //     break;
-    // case 0x54:
-    //     printf("%d", 1);
-    //     break;
-    //  case 0x55:
-    //     printf("%d", 1);
-    //     break;
-    case 0x56:
-        printf("%d", nothing);
-        break;   
-    case 0x57:
-        printf("%d", nothing);
-        break;
-    default:
+int get_enter_flag(){
+    return(enter_flag);
+
+}
+// void print_code(uint8_t scan_code){
+//     switch (scan_code)
+//     {
+//     case 0x01:
+//         printf("%d", 1);
+//         break;
+//     case 0x02:
+//         printf("%d", 2);
+//         break;
+//     case 0x03:
+//         printf("%d", 3);
+//         break;
+//      case 0x04:
+//         printf("%d", 4);
+//         break;
+//     case 0x05:
+//         printf("%d", 5);
+//         break;   
+//     case 0x06:
+//         printf("%d", 6);
+//         break;
+//     case 0x07:
+//         printf("%d", 7);
+//         break;
+//     case 0x08:
+//         printf("%d", 8);
+//         break;
+//     case 0x09:
+//         printf("%d", 9);
+//         break;
+//     case 0x0A:
+//         printf("%d", 0);
+//         break;
+//     case 0x0B:
+//         printf("-");
+//         break;
+//     case 0x0C:
+//         printf("=");
+//         break;
+//      case 0x0D:
+//         printf("%d", nothing);
+//         break;
+//     case 0x0E:
+//         printf("%d", nothing);
+//         break;   
+//     case 0x0F:
+//         printf("%d", nothing);
+//         break;
+//     case 0x10:
+//         printf("q");
+//         break;
+//     case 0x11:
+//         printf("w");
+//         break;
+//     case 0x12:
+//         printf("e");
+//         break;   
+//     case 0x13:
+//         printf("r");
+//         break;
+//     case 0x14:
+//         printf("t");
+//         break;
+//     case 0x15:
+//         printf("y");
+//         break;
+//      case 0x16:
+//         printf("u");
+//         break;
+//     case 0x17:
+//         printf("i");
+//         break;   
+//     case 0x18:
+//         printf("o");
+//         break;
+//     case 0x19:
+//         printf("p");
+//         break;
+//     case 0x1A:
+//         printf("[");
+//         break;
+//     case 0x1B:
+//         printf("]");
+//         break;
+//     case 0x1D:
+//         printf("%d", nothing);
+//         break;
+//     case 0x1E:
+//         printf("a");
+//         break;
+//     case 0x1F:
+//         printf("s");
+//         break;
+//     case 0x20:
+//         printf("d");
+//         break;   
+//     case 0x21:
+//         printf("f");
+//         break;
+//     case 0x22:
+//         printf("g");
+//         break;
+//     case 0x23:
+//         printf("h");
+//         break;
+//     case 0x24:
+//         printf("j");
+//         break; 
+//     case 0x25:
+//         printf("k");
+//         break;
+//     case 0x26:
+//         printf("l");
+//         break;
+//     case 0x27:
+//         printf(";");
+//         break;
+//      case 0x28:
+//         printf("'");
+//         break;
+//     case 0x29:
+//         printf("`");
+//         break;   
+//     case 0x2A:
+//         printf("%d", nothing);
+//         break;
+//     case 0x2B:
+//         printf("'\'");
+//         break;
+//     case 0x2C:
+//         printf("z");
+//         break;
+//     case 0x2D:
+//         printf("x");
+//         break;
+//     case 0x2E:
+//         printf("c");
+//         break;
+//     case 0x2F:
+//         printf("v");
+//         break;
+//     case 0x30:
+//         printf("b");
+//         break;
+//     case 0x31:
+//         printf("n");
+//         break;
+//     case 0x32:
+//         printf("m");
+//         break;   
+//     case 0x33:
+//         printf(",");
+//         break;
+//     case 0x34:
+//         printf(".");
+//         break;
+//     case 0x35:
+//         printf("/");
+//         break;
+//     case 0x36:
+//         printf("%d", nothing);
+//         break; 
+//     case 0x37:
+//         printf("*");
+//         break;
+//     case 0x38:
+//         printf("%d", nothing);
+//         break;
+//     case 0x39:
+//         printf("%d", nothing);
+//         break;
+//     case 0x3A:
+//         printf("%d", nothing);
+//         break;
+//     case 0x3B:
+//         printf("%d", nothing);
+//         break;   
+//     case 0x3C:
+//         printf("%d", nothing);
+//         break;
+//     case 0x3D:
+//         printf("%d", nothing);
+//         break;
+//     case 0x3E:
+//         printf("%d", nothing);
+//         break;
+//     case 0x3F:
+//         printf("%d", nothing);
+//         break;
+//     case 0x40:
+//         printf("%d", nothing);
+//         break;
+//     case 0x41:
+//         printf("%d", nothing);
+//         break;
+//     case 0x42:
+//         printf("%d", nothing);
+//         break;
+//     case 0x43:
+//         printf("%d", nothing);
+//         break;
+//     case 0x44:
+//        printf("%d", nothing);
+//         break;   
+//     case 0x45:
+//         printf("%d", nothing);
+//         break;
+//     case 0x46:
+//         printf("%d", nothing);
+//         break;
+//     case 0x47:
+//         printf("%d", 7);
+//         break;
+//     case 0x48:
+//         printf("%d", 8);
+//         break; 
+//     case 0x49:
+//         printf("%d", 9);
+//         break;
+//     case 0x4A:
+//         printf("-");
+//         break;
+//     case 0x4B:
+//         printf("%d", 4);
+//         break;
+//      case 0x4C:
+//         printf("%d", 5);
+//         break;
+//     case 0x4D:
+//         printf("%d", 6);
+//         break;   
+//     case 0x4E:
+//         printf("+");
+//         break;
+//     case 0x4F:
+//         printf("%d", 1);
+//         break;
+//     case 0x50:
+//         printf("%d", 2);
+//         break;
+//     case 0x51:
+//         printf("%d", 3);
+//         break;
+//     case 0x52:
+//         printf("%d", 0);
+//         break;
+//     // case 0x53:
+//     //     printf(".");
+//     //     break;
+//     // case 0x54:
+//     //     printf("%d", 1);
+//     //     break;
+//     //  case 0x55:
+//     //     printf("%d", 1);
+//     //     break;
+//     case 0x56:
+//         printf("%d", nothing);
+//         break;   
+//     case 0x57:
+//         printf("%d", nothing);
+//         break;
+//     default:
         
-        break;
-    }
+//         break;
+//     }
 
-}
+// }
+/*2 buffers for lowercase and uppercase set up flags */
 
 //char keycodes[0xD7][1];
     //     keycodes[0x01] = nothing; //escape pressed

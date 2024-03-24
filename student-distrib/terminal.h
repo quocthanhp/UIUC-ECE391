@@ -8,12 +8,20 @@
 #define TERMINAL_ROWS 25
 #define KEYBOARD_BUFFER_SIZE 128
 
-int screen_x;
-int screen_y;
+typdef struct terminal{
+    char terminal_buffer[KEYBOARD_BUFFER_SIZE];
+    int screen_x;
+    int screen_y;
+    int position =0;
+} terminal;
+
+
 
 void clear_terminal();
-int terminal_open(const uint8_t filename);
-int terminal_close();
-int terminal_read();
-int terminal_write();
+int terminal_open(const uint8_t * filename);
+int terminal_close(int32_t fd);
+int terminal_read(int32_t fd, void * buf, int32_t nbytes);
+int terminal_write(int32_t fd, const void * buf, int32_t nbytes);
+void terminal_update_buffer(unsigned char character);
+void terminal_remove_from_buffer();
 
