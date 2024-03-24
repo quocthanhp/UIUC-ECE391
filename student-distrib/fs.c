@@ -1,7 +1,6 @@
 #include "fs.h"
 #include "lib.h"
 
-
 /* Files sys data */
 uint32_t dir_read_pos = 0;
 uint32_t file_read_pos = 0;
@@ -24,19 +23,27 @@ void fs_init(uint32_t boot_block_ptr) {
  * Function: Fill in the dentry block */
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry) {
     uint32_t f_len = strlen((int8_t *) fname);
+    if (f_len > MAX_FILE_NAME) {
+        f_len = MAX_FILE_NAME;
+    }
 
     if (fname == NULL || dentry == NULL || f_len > MAX_FILE_NAME) {
         printf("Invalid parameters\n");
         return -1;
     }
 
-
     int i;
     dentry_t curr_dentry;
     int curr_dentry_len;
-    for (i = 0; i < MAX_FILES; i++) {
+    int files = boot_block_start->num_dir_entries;
+
+    for (i = 0; i < files; i++) {
         curr_dentry = boot_block_start->dentries[i];
         curr_dentry_len = strlen((int8_t *) curr_dentry.file_name);
+
+        if (curr_dentry_len > MAX_FILE_NAME) {
+            curr_dentry_len = MAX_FILE_NAME;
+        }
 
         if (f_len != curr_dentry_len) {
             continue;
@@ -143,8 +150,14 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     return bytes_read;
 }
 
+/* dir_read(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: 0 for successful read
+ * Function: Fill in the buffer by file name */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes) {
-    if (dir_read_pos > MAX_FILES) {
+    if (dir_read_pos >= boot_block_start->num_dir_entries) {
         return 0;
     }
 
@@ -157,10 +170,20 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes) {
     }
 }
 
+/* dir_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Write n bytes from buffer to file */
 int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 }
 
+/* dir_open(const uint8_t* dirname);
+ * Inputs: dirname = file name
+ * Return Value: 0 on success, -1 on failure
+ * Function: Open a directory */
 int32_t dir_open(const uint8_t* dirname) {
     if (read_dentry_by_name(dirname, &test_dentry) == 0) {
         return 0;
@@ -169,18 +192,39 @@ int32_t dir_open(const uint8_t* dirname) {
     return -1;
 }
 
+/* dir_close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 
+ * Function: Close a directory */
 int32_t dir_close(int32_t fd) {
     return 0;
 }
 
+/* file_read(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: 0 for successful read
+ * Function: Fill in the buffer by file data */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
-    // read_data(fd, offset, buf, nbytes); 
+    //read_data(fd, offset, buf, nbytes); 
+    return 0;
 }
 
+/* file_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Write n bytes from buffer to file */
 int32_t file_write(int32_t fd, const void* buf, int32_t nbytes) {
     return -1;
 }
 
+/* file_open(const uint8_t* dirname);
+ * Inputs: dirname = file name
+ * Return Value: 0 on success, -1 on failure
+ * Function: Open a file */
 int32_t file_open(const uint8_t* filename) { 
     if (read_dentry_by_name(filename, &test_dentry) == 0) {
         return 0;
@@ -189,6 +233,10 @@ int32_t file_open(const uint8_t* filename) {
     return -1;
 }
 
+/* file_close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 
+ * Function: Close a file */
 int32_t file_close(int32_t fd) {
     return 0;
 }
