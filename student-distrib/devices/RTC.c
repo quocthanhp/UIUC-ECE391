@@ -40,8 +40,8 @@ void rtc_interrupt(void){
     //confirm wtih TA
     outb(STATUSC, CMOS_CMD);
     inb(CMOS_DATA);
-    printf('1');
-    test_interrupts();
+    // printf('1');
+    // test_interrupts();
     // enable_irq(8);
     send_eoi(8);
     // sti();

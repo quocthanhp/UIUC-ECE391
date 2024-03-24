@@ -12,8 +12,10 @@ int screen_x;
 int screen_y;
 
 void clear_terminal();
-int terminal_open(const uint8_t filename);
+int terminal_open(const uint8_t* filename);
 int terminal_close();
 int terminal_read();
 int terminal_write();
+
+#endif
 

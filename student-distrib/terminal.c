@@ -31,7 +31,7 @@ void clear_terminal(void){
  * INPUTS: const uint8_t * filename (pointer to a file name)
  * OUTPUTS: returns 0 on success
  */
-int terminal_open(const uint8_t * filename){
+int terminal_open(const uint8_t* filename){
     
     clear_terminal();
     return 0;
