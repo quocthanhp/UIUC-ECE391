@@ -173,7 +173,7 @@ void putc(uint8_t c) {
         screen_y++;
         screen_x = 0;
     }
-    else if(c == '    '){
+    else if(c == TAB_PRESSED){
        // if(screen_x == 21 || screen_x == 22 || screen_x == 23 || screen_x == 24 ){
             screen_y ++;
             screen_x = ((screen_x + 4) % NUM_ROWS);
@@ -195,12 +195,31 @@ void putc(uint8_t c) {
     // else if(screen_x == 24 && screen_y == 79){
     //     /* add new line? */
     // } 
+    else if ( ( (screen_x == 79) && (screen_y == 24)  ) || ((screen_y == 24) && (c == '\n') ) ){
+        int i;
+        int j;
+        int k;
+        for(j = 0; j < (NUM_ROWS - 1); j++){
+            for(i = 0; i < NUM_COLS; i++){
+                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * i + (j + 1) << 1)));
+                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
+            }
+        }
+
+        //initialize the last row with spaces
+        for( k = 0; k < NUM_COLS; k++){
+            *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1)) = ' ';
+            *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
+        }
+            
+    }   
      else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        screen_x %= NUM_COLS;
+    
     }
 }
 

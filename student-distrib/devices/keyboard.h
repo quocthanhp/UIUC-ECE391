@@ -33,12 +33,9 @@
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;
 
-unsigned char lowercase_characters[128];
-unsigned char uppercase_characters[128];
-unsigned char shifted_characters[128];
+unsigned char lowercase_characters[54];
+unsigned char uppercase_characters[54];
 
-
-char keyboard_buffer[128];
 
 /* init functiuon for keybaord */
 void keyboard_init(void);

@@ -161,3 +161,5 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         terminal_.position = terminal_.position - 1;
     }
  }
+
+ 
