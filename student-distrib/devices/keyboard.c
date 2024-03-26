@@ -6,10 +6,17 @@
 // #include "../lib.c" 
 
 
+int caps_lock_flag; //turned off (0) by default 
+int shift_flag;
+int alt_flag;
+int backspace_flag;
+int control_flag;
+int l_flag;
+int enter_flag;
 
-unsigned char lowercase_characters[53] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
+unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
 
-unsigned char upppercase_characters[53]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
+unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
 
 /*flags to be used for special cases*/
 // int caps_lock_flag = 0; //turned off (0) by default 
@@ -45,7 +52,7 @@ int nothing = NULL;
 void keyboard_interrupt(void){
 
 /* google says keybaord is usually irq 1*/ 
-    // cli();
+    cli();
 
     uint8_t scan_code = get_key();
 
@@ -117,37 +124,36 @@ void keyboard_interrupt(void){
             break;
     }
 
-    if(caps_lock_flag == 0) {
-
-                //shift pressed while caps lock is off
-                if(shift_flag == 1){
-                    //
-                    putc(upppercase_characters[scan_code]);
-                    terminal_update_buffer(upppercase_characters[scan_code]);
-                }
-
-                //shift isn't pressed while caps lock is off
-                else if (shift_flag == 0){
-                    putc(lowercase_characters[scan_code]);
-                    //function to add to buffer
-                    terminal_update_buffer(lowercase_characters[scan_code]);
-                }
+    if (scan_code < MAX_SCAN_CODES && scan_code > 0) {
+        if(caps_lock_flag == 0) {
+            //shift pressed while caps lock is off
+            if(shift_flag == 1){
+                //
+                putc(upppercase_characters[scan_code]);
+                terminal_update_buffer(upppercase_characters[scan_code]);
             }
 
-            else if(caps_lock_flag == 1){
-
-                //shift pressed while caps lock is on
-                if(shift_flag == 1){
-                    putc(lowercase_characters[scan_code]);
-                    terminal_update_buffer(lowercase_characters[scan_code]);
-                }
-                else{
-                //else if(shift_flag == 0){
-                    // putc('!');
-                    putc(upppercase_characters[scan_code]);
-                    terminal_update_buffer(upppercase_characters[scan_code]);
-                }
+            //shift isn't pressed while caps lock is off
+            else if (shift_flag == 0){
+                putc(lowercase_characters[scan_code]);
+                //function to add to buffer
+                terminal_update_buffer(lowercase_characters[scan_code]);
             }
+        }
+        else if(caps_lock_flag == 1){
+
+            //shift pressed while caps lock is on
+            if(shift_flag == 1){
+                putc(lowercase_characters[scan_code]);
+                terminal_update_buffer(lowercase_characters[scan_code]);
+            }
+            else{
+            //else if(shift_flag == 0){
+                // putc('!');
+                putc(upppercase_characters[scan_code]);
+                terminal_update_buffer(upppercase_characters[scan_code]);
+            }
+        }
 
 
             // else if(shift_flag == 0) {
@@ -168,11 +174,12 @@ void keyboard_interrupt(void){
             //     terminal_update_buffer(lowercase_characters[scan_code]);
             // }
 
-            else if(control_flag == 1){
-                if(scan_code == L_PRESSED){
-                    clear_terminal();
-                }
+        else if(control_flag == 1){
+            if(scan_code == L_PRESSED){
+                clear_terminal();
             }
+        }
+    }
             // else if(backspace_flag ==1){
             //     putc(BACKSPACE_PRESSED);
             // }
@@ -180,7 +187,7 @@ void keyboard_interrupt(void){
     
     /* after each key send eoi */
     send_eoi(1);
-    // sti();
+    sti();
     //update terminal buffer 
     //print the actual character as well using putc 
 }

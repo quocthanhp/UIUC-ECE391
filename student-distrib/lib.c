@@ -210,7 +210,7 @@ void putc(uint8_t c) {
         int k;
         for(j = 0; j < (NUM_ROWS - 1); j++){
             for(i = 0; i < NUM_COLS; i++){
-                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * i + (j + 1) << 1)));
+                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * i + (j + 1)) << 1));
                  *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
             }
         }
