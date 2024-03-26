@@ -33,9 +33,9 @@
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;
 
-char lowercase_characters[128];
-char uppercase_characters[128];
-char shifted_characters[128];
+unsigned char lowercase_characters[128];
+unsigned char uppercase_characters[128];
+unsigned char shifted_characters[128];
 
 
 char keyboard_buffer[128];
