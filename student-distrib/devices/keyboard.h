@@ -19,6 +19,7 @@
 #define RIGHT_SHIFT_PRESSED     0x36
 #define LEFT_ALT_PRESSED        0x38
 #define CAPS_LOCK_PRESSED       0x3A
+// #define RIGHT_CONTROL_PRESSED   0xE0 
 
 #define L_PRESSED               0x26
 #define L_RELEASED              0xA6
@@ -28,6 +29,7 @@
 #define LEFT_SHIFT_RELEASED     0xAA
 #define RIGHT_SHIFT_RELEASED    0xB6
 #define ENTER_RELEASED          0x9C
+// #define RIGHT_CONTROL_RELEASED  0xE0
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;
 

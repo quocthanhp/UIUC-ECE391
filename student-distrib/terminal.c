@@ -22,8 +22,10 @@ void clear_terminal(terminal terminal_){
     clear();
 
     //reset the cursor to the top left postion. 
-    terminal_.screen_x = 0;
-    terminal_.screen_y = 0;
+    // terminal_.screen_x = 0;
+    // terminal_.screen_y = 0;
+
+    /*need to add something to change cursor position to be in the top left */
 }
 
 /*
@@ -32,11 +34,18 @@ void clear_terminal(terminal terminal_){
  * INPUTS: const uint8_t * filename (pointer to a file name)
  * OUTPUTS: returns 0 on success
  */
-int terminal_open(){
+int terminal_open(const uint8_t * filename){
     
+    int i;
     terminal terminal_;
+
+    terminal_.position = 0; // initializing the "actual" buffer size as 0 
+    for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
+            terminal_.terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
+        }
     clear_terminal(terminal_);
     return 0;
+
 }
 
 /*
@@ -50,29 +59,53 @@ int terminal_open(){
 
 int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
-    int bytes_read = -1; //return value, will be updated within the function
-    int i;
-
-    int enter_flag = get_enter_flag();
-    //check if the last character in the terminal buffer is '\n'
-    while ( enter_flag == 0 ){
+    int bytes_read = 0; //return value, will be updated within the function
+    int32_t i;
+    int32_t range;
+    // int enter_flag = get_enter_flag();
+    //check if the last character in the terminal buffer is '\n' (CA suggestion instead of using an enter flag)
+    while ( (terminal_.terminal_buffer[terminal_.position]) != '\n' ){
         //do nothing 
-     } 
+    } 
 
     cli();
-    if(nbytes < KEYBOARD_BUFFER_SIZE || ((nbytes-1) < terminal_.position)){ //print as many bytes as possible and copy until \n
-        for (i = 0; i < nbytes; terminal++){
-            buf[i] = terminal_.terminal_buffer[i];
+
+    //print as many bytes as possible and copy until \n
+
+    // check if the number of bytes we want to read is less that the max size of the buffer
+    //  update the actual range we want to use according to the conditon
+    if(nbytes < KEYBOARD_BUFFER_SIZE){  
+        range = nbytes;
+    }
+    else{
+        range = KEYBOARD_BUFFER_SIZE;
+    }
+
+    for (i = 0; i < range; i++){
+
+        if( terminal_.terminal_buffer[i] != '\n'){
+            ((char*) buf)[i] = terminal_.terminal_buffer[i];
+            bytes_read = bytes_read + 1;
         }
-        bytes_read = nbytes;
+        //we don't want to read beyond the first '\n' character
+        else{
+            break;
+        }
+
+    }
+
+    sti();
+    if(bytes_read > 0){
+        return bytes_read;
+    }
+    else{
+        return -1;
     }
     //similar arguments to a file (user buf bytes blah blah blah)
     // while enter isn't pressed 
     //keyboard will send interrupts 
     //add stuff to the buffer
     //memcopy to read to the user buffer 
-    sti();
-    return bytes_read;
 
 }
 
@@ -90,12 +123,13 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
     //input buffer (sys call)
     //for loop and put c
-    int i;
+    int32_t i;
     char current_character;
 
+    //check the conditions with TAs
     for( i = 0; i < nbytes; i++){
         current_character = ((char *) buf)[i];
-        putc(current_character)
+        putc(current_character);
     }
     return nbytes;
 }
@@ -111,18 +145,18 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
  void terminal_update_buffer(unsigned char character) {
 
-    if( (terminal_.postion < 127) ){
+    if( (terminal_.position < 127) ){
 
         terminal_.position = (terminal_.position)++;
         terminal_.terminal_buffer[terminal_.position] = character;
     }
-   
+   // what should 
     
  }
 
  void terminal_remove_from_buffer(){
     if(terminal_.position > 0){
-        int delete_pos = terminal_.postion;
+        int delete_pos = terminal_.position;
         terminal_.terminal_buffer[delete_pos] = ' ';
         terminal_.position = terminal_.position - 1;
     }

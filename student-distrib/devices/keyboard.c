@@ -7,7 +7,7 @@
 
 
 unsigned char backspace_character = ' ';
-unsigned char lowercase_characters[54] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , '    '  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , "'" , "`" , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
+unsigned char lowercase_characters[54] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , '    '  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
 
 unsigned char upppercase_characters[54]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , '    '  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
 
@@ -67,12 +67,12 @@ void keyboard_interrupt(void){
             //set shift flag to 0
             shift_flag = 0;
 
-        case ALT_PRESSED:
+        case LEFT_ALT_PRESSED:
             //set alt flag to 1
             alt_flag = 0;
-        case ALT_RELEASED:
+        /*case LEFT_ALT_RELEASED:
             //set alt flag to 0
-            alt_flag = 0;
+            alt_flag = 0; */
         
         case BACKSPACE_PRESSED:
             backspace_flag = 1;
@@ -84,14 +84,14 @@ void keyboard_interrupt(void){
         case LEFT_CONTROL_PRESSED:
             control_flag = 1;
         
-        case RIGHT_CONTROL_PRESSED:
-            control_flag = 1;
+        // case RIGHT_CONTROL_PRESSED:
+        //     control_flag = 1;
         
         case LEFT_CONTROL_RELEASED:
             control_flag = 0;
 
-        case RIGHT_CONTROL_RELEASED:
-            control_flag = 0;
+        // case RIGHT_CONTROL_RELEASED:
+        //     control_flag = 0;
 
         case L_PRESSED:
             l_flag = 1;
