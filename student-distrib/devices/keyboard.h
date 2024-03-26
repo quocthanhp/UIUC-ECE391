@@ -37,6 +37,15 @@ unsigned char lowercase_characters[53];
 unsigned char uppercase_characters[53];
 #define TAB_SPACES  4
 
+int caps_lock_flag; //turned off (0) by default 
+int shift_flag;
+int alt_flag;
+int backspace_flag;
+int control_flag;
+int backspace_flag;
+int l_flag;
+int enter_flag;
+
 
 
 /* init functiuon for keybaord */
