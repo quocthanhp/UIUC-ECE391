@@ -35,6 +35,8 @@
 
 unsigned char lowercase_characters[54];
 unsigned char uppercase_characters[54];
+#define TAB_SPACES  4
+
 
 
 /* init functiuon for keybaord */
