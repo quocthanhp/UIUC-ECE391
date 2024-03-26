@@ -7,9 +7,9 @@
 
 
 
-unsigned char lowercase_characters[52] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
+unsigned char lowercase_characters[53] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j ' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
 
-unsigned char upppercase_characters[52]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
+unsigned char upppercase_characters[53]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
 
 /*flags to be used for special cases*/
 int caps_lock_flag = 0; //turned off (0) by default 
@@ -49,62 +49,62 @@ void keyboard_interrupt(void){
         case CAPS_LOCK_PRESSED:
             //switches the caps loack flag to 1 or 0
             caps_lock_flag = caps_lock_flag == 0 ? 1 : 0;
-
+            break;
         case LEFT_SHIFT_PRESSED:
             // shift_flag = shift_flag == 0 ? 1 : 0;
             shift_flag = 1;
             //set shift flag to 1
-            
+            break;
         case RIGHT_SHIFT_PRESSED:
             //set shift flag to 1
             shift_flag = 1;
-
+            break;
         case LEFT_SHIFT_RELEASED:
             //set shift flag to 0
             shift_flag = 0;
-
+            break;
         case RIGHT_SHIFT_RELEASED:
             //set shift flag to 0
             shift_flag = 0;
-
+            break;
         case LEFT_ALT_PRESSED:
             //set alt flag to 1
             alt_flag = 0;
         /*case LEFT_ALT_RELEASED:
             //set alt flag to 0
             alt_flag = 0; */
-        
+            break;
         case BACKSPACE_PRESSED:
             backspace_flag = 1;
             terminal_remove_from_buffer();
-        
+            break;
         case BACKSPACE_RELEASED:
             backspace_flag = 0;
-
+            break;
         case LEFT_CONTROL_PRESSED:
             control_flag = 1;
-        
+            break;
         // case RIGHT_CONTROL_PRESSED:
         //     control_flag = 1;
         
         case LEFT_CONTROL_RELEASED:
             control_flag = 0;
-
+            break;
         // case RIGHT_CONTROL_RELEASED:
         //     control_flag = 0;
 
         case L_PRESSED:
             l_flag = 1;
-        
+            break;
         case L_RELEASED:
             l_flag = 0;
-
+            break;
         case ENTER_PRESSED:
             enter_flag =1; 
-        
+            break;
         case ENTER_RELEASED:
             enter_flag = 0;
-        
+            break;
         default:
 
             if(caps_lock_flag == 0) {
@@ -112,7 +112,7 @@ void keyboard_interrupt(void){
                 //shift pressed while caps lock is off
                 if(shift_flag == 1){
                     //
-                    putc(uppercase_characters[scan_code]);
+                    putc(upppercase_characters[scan_code]);
                     terminal_update_buffer(lowercase_characters[scan_code]);
                 }
 
@@ -163,7 +163,7 @@ void keyboard_interrupt(void){
                 }
             }
             else if(backspace_flag ==1){
-                putc(backspace_character);
+                putc(BACKSPACE_PRESSED);
             }
 
 

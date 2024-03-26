@@ -33,8 +33,8 @@
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;
 
-unsigned char lowercase_characters[54];
-unsigned char uppercase_characters[54];
+unsigned char lowercase_characters[53];
+unsigned char uppercase_characters[53];
 #define TAB_SPACES  4
 
 
