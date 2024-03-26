@@ -9,6 +9,7 @@
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
+
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
@@ -23,6 +24,8 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    screen_x = 0;
+    screen_y = 0;
 }
 
 /* Standard printf().
@@ -173,34 +176,36 @@ void putc(uint8_t c) {
         screen_y++;
         screen_x = 0;
     }
-    else if(c == '    '){
-       // if(screen_x == 21 || screen_x == 22 || screen_x == 23 || screen_x == 24 ){
-            screen_y ++;
-            screen_x = ((screen_x + 4) % NUM_ROWS);
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = '    ';
+    else if(c == TAB_PRESSED){
+        int i;
+        for (i = 0; i < TAB_SPACES; i++) {
+            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
             *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-       // }
+            screen_x++;
+            screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+            screen_x %= NUM_COLS;
+        }
     }
     else if (c == BACKSPACE_PRESSED){
         if(screen_x != 0 && screen_y != 0){
-            screen_y-- ;
-            if(screen_x == 0){
-               screen_x == 24;
-                } 
-                    else {screen_x --;}
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = '    ';
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;   
+            screen_x--; 
+            if (screen_x < 0) {
+                screen_y = (screen_y - 1) % NUM_ROWS;
+                screen_x = NUM_COLS - 1;
+            } else {
+                screen_y = (screen_y - (screen_x / NUM_COLS)) % NUM_ROWS;
+            }
+
+            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB; 
         }
-    }
-    // else if(screen_x == 24 && screen_y == 79){
-    //     /* add new line? */
-    // } 
-     else {
+    } 
+    else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        screen_x %= NUM_COLS;
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        screen_x %= NUM_COLS;
     }
 }
 
