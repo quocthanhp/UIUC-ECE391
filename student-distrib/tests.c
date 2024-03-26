@@ -67,6 +67,50 @@ int divide_by_zero_test(){
 // }
 
 /* Checkpoint 2 tests */
+int rtc_freq_test(){
+	TEST_HEADER;
+	int32_t test = 4;
+	int32_t test2 = 16;
+	int32_t test3 = 128;
+	int32_t test4 = 1024;
+	int32_t nbytes = 4; 
+	uint8_t *buf;
+
+	int i;
+	
+	clear();
+	
+	rtc_write(test, buf, nbytes); 
+	for(i = 0; i < 10; i++ ){
+		rtc_read(test, buf, nbytes);
+		printf((const int8_t *) "1");
+	}
+
+	printf((const int8_t *) "\n");
+	 rtc_write(test2, buf, nbytes);
+	for(i = 0; i < 20; i++ ){
+		rtc_read(test2, buf, nbytes);
+		printf((const int8_t *) "1");
+	}
+	
+
+	printf((const int8_t *) "\n");
+	 rtc_write(test3, buf, nbytes);
+	for(i = 0; i < 80; i++ ){
+		rtc_read(test3, buf, nbytes);
+		printf((const int8_t *) "1");
+	}
+
+	printf((const int8_t *) "\n");
+	 rtc_write(test4, buf, nbytes);
+	for(i = 0; i < 80; i++ ){
+		rtc_read(test4, buf, nbytes);
+		printf((const int8_t *) "1");
+	}
+	// clear();
+	// return(PASS);
+	return 1;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -77,6 +121,7 @@ void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	// TEST_OUTPUT("divide by zero test", divide_by_zero_test());
 	// TEST_OUTPUT("rtc_test", test_interrupts());
-	//TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
+	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
+	rtc_freq_test();
 	// launch your tests here
 }

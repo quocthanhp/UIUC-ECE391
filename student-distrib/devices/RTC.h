@@ -14,7 +14,7 @@
 /* rtc regs */
 #define STATUSA 0x8A
 #define STATUSB 0x8B
-#define STATUSC 0x0C
+#define STATUSC 0x8C
 
 /* init RTC chip */
 void RTC_INIT(void);
