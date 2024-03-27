@@ -50,7 +50,7 @@ void rtc_interrupt(void){
     outb(STATUSB, CMOS_CMD);
     outb(STATUSC, CMOS_CMD);
 
-    char prev = inb(CMOS_DATA);
+   // char prev = inb(CMOS_DATA);
     send_eoi(8);
 
     // outb((prev / 0xF0) | rate, CMOS_DATA);

@@ -86,29 +86,28 @@ int rtc_freq_test(){
 	rtc_write(test, buf, nbytes); 
 	for(i = 0; i < 10; i++ ){
 		rtc_read(test, buf, nbytes);
-		printf((const int8_t *) "1");
+		printf(( int8_t *) "1");
 	}
 
-	printf((const int8_t *) "\n");
+	printf((int8_t *) "\n");
 	 rtc_write(test2, buf, nbytes);
 	for(i = 0; i < 20; i++ ){
 		rtc_read(test2, buf, nbytes);
-		printf((const int8_t *) "1");
+		printf(( int8_t *) "1");
 	}
 	
-
-	printf((const int8_t *) "\n");
+	printf(( int8_t *) "\n");
 	 rtc_write(test3, buf, nbytes);
 	for(i = 0; i < 80; i++ ){
 		rtc_read(test3, buf, nbytes);
-		printf((const int8_t *) "1");
+		printf((int8_t *) "1");
 	}
 
-	printf((const int8_t *) "\n");
+	printf(( int8_t *) "\n");
 	 rtc_write(test4, buf, nbytes);
 	for(i = 0; i < 80; i++ ){
 		rtc_read(test4, buf, nbytes);
-		printf((const int8_t *) "1");
+		printf(( int8_t *) "1");
 	}
 	// clear();
 	// return(PASS);
@@ -144,7 +143,7 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by zero test", divide_by_zero_test());
 	// TEST_OUTPUT("rtc_test", test_interrupts());
 	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
-	// rtc_freq_test();
-	terminal_tests();
+	 rtc_freq_test();
+	 terminal_tests();
 	// launch your tests here
 }

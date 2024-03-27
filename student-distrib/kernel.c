@@ -152,8 +152,10 @@ void entry(unsigned long magic, unsigned long addr) {
     /* init the keyboard */
     // enable_irq( 0 );
     keyboard_init();
-    // RTC_INIT();
 
+    /* DO NOT COMMENT THIS OUT */  /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */
+    RTC_INIT();
+    /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */ /* DO NOT COMMENT THIS OUT */
  
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

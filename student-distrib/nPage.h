@@ -12,5 +12,5 @@
 
 // this is to call initialization of page
 void pageInit();
-
+void enable_paging(unsigned int * page_directory);
 #endif
