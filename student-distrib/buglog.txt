@@ -10,3 +10,12 @@ BUG2:
     description
         unmatched type and unmatched name
         
+BUG3:
+    verlargetextfile.tx was printed without NULL terminated
+
+
+BUG4:
+    forgot to advance buffer on reading the remaining blocks in fs 
+
+
+

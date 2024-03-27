@@ -4,6 +4,8 @@
 #include "devices/RTC.h"
 #include "devices/keyboard.h"
 #include "terminal.h"
+#include "fs.h"
+
 
 #define PASS 1
 #define FAIL 0
@@ -133,6 +135,148 @@ int terminal_tests(){
 
 	return bytes_written;
 }
+
+/* File System Driver Test 
+ * 
+ * Read all file names in file system
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_dentry_by_name, read_dentry_by_index, dir_read
+ * Files: fs.h/c
+ */
+int dir_read_test() {
+	TEST_HEADER;
+	clear();
+
+	inode_t *curr_node;
+	uint8_t buf[MAX_FILE_NAME + 1];
+	int i;
+
+	for (i = 0; i < boot_block_start->num_dir_entries; i++) {
+		if (dir_read(0, buf, MAX_FILE_NAME) == 0) {
+			curr_node = (inode_t *) inode_start + test_dentry.inode_num;
+			buf[MAX_FILE_NAME] = '\0'; // for very large txt file  
+
+			printf("file_name: %s, file_type: %d, file_size: %d\n", buf, test_dentry.file_type, curr_node->len);
+		} 
+		else {
+			return FAIL;
+		}
+	}
+
+	return PASS;
+}
+
+/* File System Driver Test 
+ * 
+ * Read data from small file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_data
+ * Files: fs.h/c
+ */
+int read_data_small_file_test() {
+	TEST_HEADER;
+	clear();
+
+	dentry_t my_dentry;
+	uint32_t frame0_inode; 
+	uint8_t frame0_size;
+
+	read_dentry_by_name((const uint8_t *) "frame0.txt", &my_dentry);
+	frame0_inode = my_dentry.inode_num;
+	frame0_size = ((inode_t *) inode_start + my_dentry.inode_num)->len;
+
+	// Read data
+	uint8_t buf[frame0_size];
+	int32_t bytes_read = read_data(frame0_inode, 0, buf, frame0_size);
+
+	if (bytes_read != frame0_size) {
+		return FAIL;
+	}
+
+	printf( (int8_t *) buf);
+	printf("file_name: frame0.txt\n");
+	return PASS;
+}
+
+/* File System Driver Test 
+ * 
+ * Read data from executable file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_data
+ * Files: fs.h/c
+ */
+int read_data_exec_file_test() {
+	TEST_HEADER;
+	clear();
+
+	dentry_t my_dentry;
+	uint32_t grep_inode; 
+	uint32_t grep_size;
+
+	read_dentry_by_name((const uint8_t *) "grep", &my_dentry);
+	grep_inode = my_dentry.inode_num;
+	grep_size = ((inode_t *) inode_start + my_dentry.inode_num)->len;
+
+	uint8_t buf[grep_size];
+	int32_t bytes_read = read_data(grep_inode, 0, buf, grep_size);
+
+	if (bytes_read != grep_size) {
+		return FAIL;
+	}
+
+	int i;
+	for (i = 0; i < bytes_read; i++) {
+		if (buf[i] != '\0') {
+			putc(buf[i]);
+		}
+	}
+	
+	printf("\nfile_name: grep\n");
+	return PASS;
+}
+
+/* File System Driver Test 
+ * 
+ * Read data from large file
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: read_data
+ * Files: fs.h/c
+ */
+int read_data_large_file_test() {
+	TEST_HEADER;
+	clear();
+
+	dentry_t my_dentry;
+	uint32_t verylargefile_inode;
+	uint32_t verylargefile_size;
+
+	read_dentry_by_name((const uint8_t *) "verylargetextwithverylongname.tx", &my_dentry);
+	verylargefile_inode = my_dentry.inode_num;
+	verylargefile_size = ((inode_t *) inode_start + my_dentry.inode_num)->len;
+
+	uint8_t buf[verylargefile_size];
+	int32_t bytes_read = read_data(verylargefile_inode, 0, buf, verylargefile_size);
+
+	if (bytes_read != verylargefile_size) {
+		return FAIL;
+	}
+
+	int i;
+	for (i = 0; i < bytes_read; i++) {
+		putc(buf[i]);	
+	}
+
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -147,4 +291,10 @@ void launch_tests(){
 	//  rtc_freq_test();
 	// terminal_tests();
 	// launch your tests here
+
+	//TEST_OUTPUT("dir_read_test", dir_read_test());
+	//TEST_OUTPUT("read_data_small_file_test", read_data_small_file_test());
+	//TEST_OUTPUT("read_data_exec_file_test", read_data_exec_file_test());
+	TEST_OUTPUT("read_data_large_file_test", read_data_large_file_test());
+
 }
