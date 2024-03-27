@@ -67,6 +67,8 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     // int enter_flag = get_enter_flag();
     //check if the last character in the terminal buffer is '\n' (CA suggestion instead of using an enter flag)
     while ( (terminal_.terminal_buffer[terminal_.position]) != '\n' ){
+    /*while (enter_flag == 0) */
+    
         //do nothing 
     } 
 
@@ -91,10 +93,11 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
             terminal_.position = terminal_.position - 1;
             bytes_read = bytes_read + 1;
         }
-        //we don't want to read beyond the first '\n' character
+
         else{
             break;
-            }
+        }
+            
 
     }
     sti();
@@ -155,8 +158,8 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
     if( (terminal_.position < 127) ){
 
-        terminal_.terminal_buffer[terminal_.position] = character;
         terminal_.position = (terminal_.position) + 1;
+        terminal_.terminal_buffer[terminal_.position] = character; 
     }
    // what should 
     
@@ -169,8 +172,4 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         terminal_.position = terminal_.position - 1;
     }
  }
-
- 
-
-
  

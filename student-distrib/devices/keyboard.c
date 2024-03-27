@@ -125,7 +125,11 @@ void keyboard_interrupt(void){
     }
 
     if (scan_code < MAX_SCAN_CODES && scan_code > 0) {
-        if(caps_lock_flag == 0) {
+
+        if(scan_code == BACKSPACE_PRESSED){
+            putc(lowercase_characters[scan_code]);
+        }
+        else if(caps_lock_flag == 0) {
             //shift pressed while caps lock is off
             if(shift_flag == 1){
                 //
