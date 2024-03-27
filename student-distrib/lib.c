@@ -211,7 +211,7 @@ void putc(uint8_t c) {
     }
 
     else if (c == BACKSPACE_PRESSED){
-        if(screen_x != 0 && screen_y != 0){
+        if(!(screen_x == 0 && screen_y == 0)){
             screen_x--; 
             if (screen_x < 0) {
                 screen_y = (screen_y - 1) % NUM_ROWS;
