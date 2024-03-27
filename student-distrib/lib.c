@@ -173,8 +173,31 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
+        int i;
+        int j;
+        int k;
+
+        if (screen_y == NUM_ROWS -1)
+        { 
+            //do vertical scrolling 
+            for(j = 0; j < (NUM_ROWS - 1); j++){ // for each row
+                for(i = 0; i < NUM_COLS; i++){
+                    *(uint8_t *)(video_mem + (((NUM_COLS * j) + i) << 1)) = *(uint8_t *)(video_mem + (((NUM_COLS * (j + 1)) + i) << 1));
+                    *(uint8_t *)(video_mem + (((NUM_COLS * j) + i) << 1) + 1) = ATTRIB;
+                }
+            }
+
+            //initialize the last row with spaces
+            for( k = 0; k < NUM_COLS; k++){
+                *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1)) = ' ';
+                *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
+            }
+            
+        }
+        
         screen_y++;
         screen_x = 0;
+        
     }
     else if(c == TAB_PRESSED){
         int i;
@@ -186,6 +209,7 @@ void putc(uint8_t c) {
             screen_x %= NUM_COLS;
         }
     }
+
     else if (c == BACKSPACE_PRESSED){
         if(screen_x != 0 && screen_y != 0){
             screen_x--; 
@@ -201,27 +225,7 @@ void putc(uint8_t c) {
         }
 
     }
-    // else if(screen_x == 24 && screen_y == 79){
-    //     /* add new line? */
-    // } 
-    else if ( ( (screen_x == 79) && (screen_y == 24)  ) || ((screen_y == 24) && (c == '\n') ) ){
-        int i;
-        int j;
-        int k;
-        for(j = 0; j < (NUM_ROWS - 1); j++){
-            for(i = 0; i < NUM_COLS; i++){
-                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * i + (j + 1)) << 1));
-                 *(uint8_t *)(video_mem + ((NUM_COLS * i + j) << 1) + 1) = ATTRIB;
-            }
-        }
-
-        //initialize the last row with spaces
-        for( k = 0; k < NUM_COLS; k++){
-            *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1)) = ' ';
-            *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
-        }
-            
-    }   
+      
     else {
 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
@@ -230,6 +234,8 @@ void putc(uint8_t c) {
         screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
         screen_x %= NUM_COLS;
     }
+
+    update_cursor(screen_x, screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -526,3 +532,43 @@ void test_interrupts(void) {
         video_mem[i << 1]++;
     }
 }
+
+ /*
+ * void enable cursor
+ * enables a cursor to be displayed at (0,0)
+ * reference: https://wiki.osdev.org/Text_Mode_Cursor
+ * INPUTS : none
+ * OUTPUTS: none
+ * SIDE EFFECT: enables a cursor
+ */
+void enable_cursor() {
+    
+    outb(0x0A, 0x3D4);
+    char temp = inb(0x3D5);
+    temp = temp & 0xC0;
+    outb(temp, 0x3D5);
+    outb(0x0B, 0x3D4);
+    char temp1 = inb(0x3D5);
+    temp1 = temp1 & 0xE0;
+    outb(temp1, 0x3D5);
+}
+
+/*
+ * void update cursor
+ * changes the displayed cursors' position
+ * to be displayed at the given screen_x and screen_y
+ * reference: https://wiki.osdev.org/Text_Mode_Cursor
+ * INPUTS : screen_x , screen_y
+ * OUTPUTS: none 
+ * SIDE EFFECTS: sets the cursor to be displayed at the new given position
+ */
+void update_cursor(int screen_x, int screen_y)
+{
+	uint16_t pos = (screen_y * NUM_COLS) + screen_x;
+ 
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+}
+
