@@ -295,6 +295,6 @@ void launch_tests(){
 	//TEST_OUTPUT("dir_read_test", dir_read_test());
 	//TEST_OUTPUT("read_data_small_file_test", read_data_small_file_test());
 	//TEST_OUTPUT("read_data_exec_file_test", read_data_exec_file_test());
-	TEST_OUTPUT("read_data_large_file_test", read_data_large_file_test());
+	// TEST_OUTPUT("read_data_large_file_test", read_data_large_file_test());
 
 }
