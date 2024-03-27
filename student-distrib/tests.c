@@ -1,6 +1,9 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "devices/RTC.h"
+#include "devices/keyboard.h"
+#include "terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -111,6 +114,25 @@ int rtc_freq_test(){
 	// return(PASS);
 	return 1;
 }
+
+int terminal_tests(){
+
+	terminal_open((uint8_t * )1);
+	unsigned char buf[KEYBOARD_BUFFER_SIZE];
+	int i;
+	for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
+        buf[i] = '\0';    //setting the static terminal buffer to be null characters
+    }
+
+	int32_t nbytes = KEYBOARD_BUFFER_SIZE;
+	while(1){
+		int32_t bytes_read = terminal_read( 1 , buf , nbytes );
+		terminal_write( 1 , buf , bytes_read );
+	}
+	
+
+	return 0;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -122,6 +144,7 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by zero test", divide_by_zero_test());
 	// TEST_OUTPUT("rtc_test", test_interrupts());
 	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
-	rtc_freq_test();
+	// rtc_freq_test();
+	terminal_tests();
 	// launch your tests here
 }

@@ -39,6 +39,8 @@ int terminal_open(const uint8_t * filename){
     int i;
     terminal terminal_;
 
+    enable_cursor();
+
     terminal_.position = 0; // initializing the "actual" buffer size as 0 
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
             terminal_.terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
@@ -85,16 +87,18 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
         if( terminal_.terminal_buffer[i] != '\n'){
             ((char*) buf)[i] = terminal_.terminal_buffer[i];
+            terminal_.terminal_buffer[i] = '\0';
+            terminal_.position = terminal_.position - 1;
             bytes_read = bytes_read + 1;
         }
         //we don't want to read beyond the first '\n' character
         else{
             break;
-        }
+            }
 
     }
-
     sti();
+
     if(bytes_read > 0){
         return bytes_read;
     }
@@ -109,6 +113,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
 }
 
+
 //call 
 /*
  * terminal write
@@ -121,7 +126,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
 int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
-    //input buffer (sys call)
+    //input buffer
     //for loop and put c
     int32_t i;
     char current_character;
@@ -129,8 +134,11 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
     //check the conditions with TAs
     for( i = 0; i < nbytes; i++){
         current_character = ((char *) buf)[i];
-        putc(current_character);
+        if(current_character != '\0'){
+             putc(current_character);
+        }
     }
+    putc('\n');
     return nbytes;
 }
 
@@ -147,8 +155,8 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
     if( (terminal_.position < 127) ){
 
-        terminal_.position = (terminal_.position)++;
         terminal_.terminal_buffer[terminal_.position] = character;
+        terminal_.position = (terminal_.position) + 1;
     }
    // what should 
     
@@ -157,7 +165,7 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
  void terminal_remove_from_buffer(){
     if(terminal_.position > 0){
         int delete_pos = terminal_.position;
-        terminal_.terminal_buffer[delete_pos] = ' ';
+        terminal_.terminal_buffer[delete_pos] = '\0';
         terminal_.position = terminal_.position - 1;
     }
  }

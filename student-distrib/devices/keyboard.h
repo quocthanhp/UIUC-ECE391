@@ -38,7 +38,7 @@
 
 
 #define TAB_SPACES      4
-#define MAX_SCAN_CODES  53
+#define MAX_SCAN_CODES  58
 
 /* init functiuon for keybaord */
 void keyboard_init(void);

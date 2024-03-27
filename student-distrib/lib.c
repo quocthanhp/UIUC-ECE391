@@ -172,6 +172,29 @@ int32_t puts(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
+
+    if((screen_x == (NUM_COLS -1) && (screen_y == (NUM_ROWS -1))) ){
+
+        int i; 
+        int j;
+        int k;
+        //do vertical scrolling 
+            for(j = 0; j < (NUM_ROWS - 1); j++){ // for each row
+                for(i = 0; i < NUM_COLS; i++){
+                    *(uint8_t *)(video_mem + (((NUM_COLS * j) + i) << 1)) = *(uint8_t *)(video_mem + (((NUM_COLS * (j + 1)) + i) << 1));
+                    *(uint8_t *)(video_mem + (((NUM_COLS * j) + i) << 1) + 1) = ATTRIB;
+                }
+            }
+
+            //initialize the last row with spaces
+            for( k = 0; k < NUM_COLS; k++){
+                *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1)) = ' ';
+                *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
+            }
+            
+            screen_x = 0;
+
+    }
     if(c == '\n' || c == '\r') {
         int i;
         int j;
@@ -193,10 +216,13 @@ void putc(uint8_t c) {
                 *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
             }
             
+            screen_x = 0;
+        }
+        else{
+            screen_y++;
+            screen_x = 0;
         }
         
-        screen_y++;
-        screen_x = 0;
         
     }
     else if(c == TAB_PRESSED){
@@ -225,6 +251,7 @@ void putc(uint8_t c) {
         }
 
     }
+
       
     else {
 
@@ -235,7 +262,7 @@ void putc(uint8_t c) {
         screen_x %= NUM_COLS;
     }
 
-    update_cursor(screen_x, screen_y);
+    // update_cursor(screen_x, screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);

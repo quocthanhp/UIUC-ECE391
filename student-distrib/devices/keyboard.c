@@ -14,9 +14,9 @@ int control_flag;
 int l_flag;
 int enter_flag;
 
-unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' };
+unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '\0' , '\0' , '\0' , '\0' , ' '};
 
-unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' };
+unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' , '\0' , '\0' , '\0' , '\0' , ' '};
 
 /*flags to be used for special cases*/
 // int caps_lock_flag = 0; //turned off (0) by default 
@@ -155,35 +155,12 @@ void keyboard_interrupt(void){
             }
         }
 
-
-            // else if(shift_flag == 0) {
-            //     putc(lowercase_characters[scan_code]);
-            //     //function to add to buffer
-            //     terminal_update_buffer(lowercase_characters[scan_code]);
-            // }
-
-            // else if(caps_lock_flag == 1){
-            //     putc(uppercase_characters[scan_code]);
-            //     //function to add to buffer
-            //     terminal_update_buffer(lowercase_characters[scan_code]);
-            // }
-
-            // else if(shift_flag == 1){
-            //     putc(uppercase_characters[scan_code]);
-            //     //function to add to buffer
-            //     terminal_update_buffer(lowercase_characters[scan_code]);
-            // }
-
-        else if(control_flag == 1){
+        if(control_flag == 1){
             if(scan_code == L_PRESSED){
                 clear_terminal();
             }
         }
     }
-            // else if(backspace_flag ==1){
-            //     putc(BACKSPACE_PRESSED);
-            // }
-   // print_code(scan_code);
     
     /* after each key send eoi */
     send_eoi(1);
