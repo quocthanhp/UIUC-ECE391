@@ -1,6 +1,6 @@
 #define ASM     1
 
-.global enable_paging, load_paging
+.global enable_paging, load_paging, flush_tlb
 
 .text
 
@@ -27,4 +27,7 @@ enable_paging:
 
     leave 
     ret
-    
+
+flush_tlb:
+    movl	%cr3, %eax
+	movl	%eax, %cr3
