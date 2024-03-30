@@ -24,9 +24,9 @@ uint32_t get_next_pid() {
 /* pcb_t *get_next_pcb();
  * Inputs: None
  * Return Value: pointer to pcb struct
- * Function: Get pointer to pcb struct of a process */
+ * Function: Get pointer to pcb struct of next process */
 pcb_t *get_next_pcb() {
-    // PCB starts at the top of an 8KB block (starts at 8MB)
+    // PCB starts at the top of an 8KB block (each process is assigned a block in kernel stack, first block starts at 8MB)
     // First PCB struct starts at 8MB - 8KB, second PCB starts at 8MB - 8KB - 8KB
     uint32_t next_pid = get_next_pid();
 
