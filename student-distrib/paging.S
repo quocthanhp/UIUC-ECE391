@@ -29,5 +29,5 @@ enable_paging:
     ret
 
 flush_tlb:
-    movl	%cr3, %eax
-	movl	%eax, %cr3
+    movl %cr3, %eax
+	movl %eax, %cr3

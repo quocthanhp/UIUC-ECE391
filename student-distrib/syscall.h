@@ -17,6 +17,12 @@
 #define PAGE_DIR_OFFSET     22
 #define PAGE_FRAME_OFFSET   12
 
+/* Bytes for magic number in executable */
+#define MAGIC_0 0x7F
+#define MAGIC_1 0x45
+#define MAGIC_2 0x4C
+#define MAGIC_3 0x46  
+
 typedef struct file_operations {
     int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
     int32_t (*write) (int32_t fd, const void* buf, int32_t nbytes);
