@@ -8,9 +8,35 @@ uint32_t pid = -1;
 extern void flush_tlb();
 
 
+/* uint32_t get_next_pid();
+ * Inputs: None
+ * Return Value: next process id
+ * Function: Get next process id */
 uint32_t get_next_pid() {
-    return ++pid;
+    pid = pid + 1;
+    if (pid > MAX_PROCESSES) {
+        return -1;
+    }
+
+    return pid;
 }
+
+/* pcb_t *get_next_pcb();
+ * Inputs: None
+ * Return Value: pointer to pcb struct
+ * Function: Get pointer to pcb struct of a process */
+pcb_t *get_next_pcb() {
+    // PCB starts at the top of an 8KB block (starts at 8MB)
+    // First PCB struct starts at 8MB - 8KB, second PCB starts at 8MB - 8KB - 8KB
+    uint32_t next_pid = get_next_pid();
+
+    if (next_pid < 0) {
+        return NULL;
+    }
+
+    return (pcb_t *) (BLOCK_VIRTUAL - (next_pid + 1) * BLOCK_SIZE);
+}
+
 
 /* set_program_page(uint32_t pid);
  * Inputs: uint32_t pid = process id
@@ -28,7 +54,6 @@ void set_program_page(uint32_t pid) {
     flush_tlb();
 }
 
-
 /* uint32_t load_program_image(const uint8_t *program_name);
  * Inputs: uint8_t *program_name = name of program to load
  * Return Value: entry point into program on success. -1 on failure
@@ -42,7 +67,7 @@ uint32_t load_program_image(const uint8_t *program_name) {
     uint8_t magic_num_size = 4;
     uint32_t prog_entry;
 
-    /* Look up program */ 
+    /* Look up program in fs */ 
     if (read_dentry_by_name(program_name, &dentry) == -1) {
         return - 1;
     }
@@ -79,6 +104,7 @@ uint32_t load_program_image(const uint8_t *program_name) {
 
     return prog_entry;
 }
+
 int32_t sys_halt (uint8_t status){}
 int32_t sys_execute (const uint8_t* command){}
 int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){}

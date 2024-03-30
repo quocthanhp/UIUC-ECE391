@@ -4,18 +4,25 @@
 #include "types.h"
 
 #define FD_ARRAY_SIZE   8
+#define MAX_PROCESSES   2
 
 /* Virtual address of user-level program */
-#define PROGRAM_VIRTUAL         0x8000000  // 128MB
-#define PROGRAM_IMAGE_VIRTUAL   0x0804800
+#define PROGRAM_VIRTUAL       0x8000000  // 128MB
+#define PROGRAM_IMAGE_VIRTUAL 0x0804800
 
 /* Physical address of user-level program */
-#define PROGRAM_PHYSICAL    0x800000 // 8MB
+#define PROGRAM_PHYSICAL 0x800000 // 8MB
 
-#define PROGRAM_SPACE       0x400000 // 4MB
+/* Total space for a program */
+#define PROGRAM_SPACE 0x400000 // 4MB
 
-#define PAGE_DIR_OFFSET     22
-#define PAGE_FRAME_OFFSET   12
+/* Block that contains PCB at the top and kernel stack at the bottom */
+#define BLOCK_VIRTUAL 0x800000 // 8MB 
+#define BLOCK_SIZE 0x2000 //8KB
+
+/* Paging offset */
+#define PAGE_DIR_OFFSET   22
+#define PAGE_FRAME_OFFSET 12
 
 /* Bytes for magic number in executable */
 #define MAGIC_0 0x7F
