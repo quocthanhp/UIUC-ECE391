@@ -21,7 +21,7 @@ void clear_terminal(terminal terminal_){
     //clear() defined within lib.h
     clear();
 
-    //reset the cursor to the top left postion. 
+    //reset the cursor to the top left position. 
     // terminal_.screen_x = 0;
     // terminal_.screen_y = 0;
 
@@ -45,6 +45,7 @@ int terminal_open(const uint8_t * filename){
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
             terminal_.terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
         }
+    terminal_.terminal_buffer[128] = '\0';
     clear_terminal(terminal_);
     return 0;
 
@@ -61,6 +62,9 @@ int terminal_open(const uint8_t * filename){
 
 int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
+    if(buf == NULL){
+        return -1;
+    }
     int bytes_read = 0; //return value, will be updated within the function
     int32_t i;
     int32_t range;
@@ -88,18 +92,37 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     for (i = 0; i < range; i++){
 
         if( terminal_.terminal_buffer[i] != '\n'){
+
             ((char*) buf)[i] = terminal_.terminal_buffer[i];
-            terminal_.terminal_buffer[i] = '\0';
-            terminal_.position = terminal_.position - 1;
+            // terminal_.terminal_buffer[i] = '\0'; 
+            // terminal_.position = terminal_.position - 1;
             bytes_read = bytes_read + 1;
         }
 
         else{
+            terminal_.terminal_buffer[i] = '\0';
             break;
         }
             
 
     }
+
+    //clearing the buffer entirely once read 
+    int j;
+    for (j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
+        terminal_.terminal_buffer[j] = '\0';
+    }
+
+    terminal_.position = 0; 
+    // for(j = 0; j < range; j++){
+
+    //     if((j + range) < KEYBOARD_BUFFER_SIZE){
+    //         terminal_.terminal_buffer[j] = terminal_.terminal_buffer[j + range];
+    //         terminal_.terminal_buffer[j + range] = '\0';
+    //     }
+        
+    // }
+
     sti();
 
     if(bytes_read > 0){
@@ -131,15 +154,18 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
     //input buffer
     //for loop and put c
+    if ( buf == NULL){
+        return -1;
+    }
     int32_t i;
     char current_character;
+
 
     //check the conditions with TAs
     for( i = 0; i < nbytes; i++){
         current_character = ((char *) buf)[i];
-        if(current_character != '\0'){
-             putc(current_character);
-        }
+        putc(current_character);
+       
     }
     putc('\n');
     return nbytes;
@@ -156,10 +182,20 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
 
  void terminal_update_buffer(unsigned char character) {
 
-    if( (terminal_.position < 127) ){
+    if( character == '\n'){
+        terminal_.terminal_buffer[terminal_.position] = '\n';
+    }
+    else if(terminal_.position == (KEYBOARD_BUFFER_SIZE -2 )){
 
-        terminal_.position = (terminal_.position) + 1;
-        terminal_.terminal_buffer[terminal_.position] = character; 
+        terminal_.terminal_buffer[terminal_.position] = character;
+        terminal_.position = (terminal_.position) + 1; 
+        terminal_.terminal_buffer[KEYBOARD_BUFFER_SIZE-1] = '\n';
+
+    }
+    else if( (terminal_.position < (KEYBOARD_BUFFER_SIZE -1)) ){
+
+        terminal_.terminal_buffer[terminal_.position] = character;
+        terminal_.position = (terminal_.position) + 1; 
     }
    // what should 
     
@@ -172,4 +208,23 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         terminal_.position = terminal_.position - 1;
     }
  }
- 
+
+/*
+ * terminal close
+ * closes the terminal
+ * INPUTS: in32_t fd
+ * OUTPUTS: returns 0 on success
+ */ 
+ int terminal_close(int32_t fd){
+
+    int i;
+
+    for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
+        terminal_.terminal_buffer[i] = '\0';
+    }
+
+    terminal_.position = 0;
+
+    return 0;
+
+ }
