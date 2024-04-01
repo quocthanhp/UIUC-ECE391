@@ -21,22 +21,19 @@ uint32_t get_next_pid() {
     return next_pid;
 }
 
-/* pcb_t *get_next_pcb();
- * Inputs: None
+/* pcb_t *get_pcb(uint32_t pid);
+ * Inputs: uint32_t pid = process id
  * Return Value: pointer to pcb struct
- * Function: Get pointer to pcb struct of next process */
-pcb_t *get_next_pcb() {
+ * Function: Get pointer to pcb struct of process pid */
+pcb_t *get_pcb(uint32_t pid) {
     // PCB starts at the top of an 8KB block (each process is assigned a block in kernel stack, first block starts at 8MB)
     // First PCB struct starts at 8MB - 8KB, second PCB starts at 8MB - 8KB - 8KB
-    uint32_t next_pid = get_next_pid();
-
-    if (next_pid < 0) {
+    if (pid >= MAX_PROCESSES) {
         return NULL;
     }
 
-    return (pcb_t *) (KERNAL_STACK - (next_pid + 1) * KERNEL_STACK_SIZE);
+    return (pcb_t *) (KERNAL_STACK - (pid + 1) * KERNEL_STACK_SIZE);
 }
-
 
 /* set_program_page(uint32_t pid);
  * Inputs: uint32_t pid = process id
@@ -56,7 +53,7 @@ void set_program_page(uint32_t pid) {
 
 /* uint32_t load_program_image(const uint8_t *program_name);
  * Inputs: uint8_t *program_name = name of program to load
- * Return Value: entry point into program on success. -1 on failure
+ * Return Value: entry point into program on success, -1 on failure
  * Function: Load program image into default program image address */
 uint32_t load_program_image(const uint8_t *program_name) {
     dentry_t dentry;
@@ -67,7 +64,7 @@ uint32_t load_program_image(const uint8_t *program_name) {
 
     /* Look up program in fs */ 
     if (read_dentry_by_name(program_name, &dentry) == -1) {
-        return - 1;
+        return -1;
     }
 
     inode = dentry.inode_num;
@@ -93,6 +90,10 @@ uint32_t load_program_image(const uint8_t *program_name) {
     return prog_entry;
 }
 
+/* is_valid_file(const uint8_t *file_name);
+ * Inputs: const uint8_t *file_name = file name
+ * Return Value: 1 if valid, 0 if invalid
+ * Function: Check if a file is valid (exits in fs and is executable) */
 int8_t is_valid_file(const uint8_t *file_name) {
     dentry_t dentry;
     uint8_t *magic_num;
@@ -100,22 +101,26 @@ int8_t is_valid_file(const uint8_t *file_name) {
 
     /* Look up program in fs */ 
     if (read_dentry_by_name(file_name, &dentry) == -1) {
-        return - 1;
+        return 0;
     }
 
     /* Check if program is an executable by reading the magic number (first 4 bytes) */ 
     if (magic_num_size != read_data(dentry.inode_num, 0, magic_num, magic_num_size)) {
-        return -1;
+        return 0;
     }
 
     if (magic_num[0] != MAGIC_0 || magic_num[1] != MAGIC_1 || magic_num[2] != MAGIC_2 || magic_num[3] != MAGIC_3) {
         // Not an executable
-        return -1;
+        return 0;
     }
 
-    return 0;
+    return 1;
 }
 
+/* uint8_t *parse(const uint8_t* command);
+ * Inputs: const uint8_t* command = command to parse
+ * Return Value: program file name
+ * Function: Extract the program file name */
 uint8_t *parse(const uint8_t* command) {
     if (command == NULL) {
         return NULL;
@@ -143,6 +148,10 @@ uint8_t *parse(const uint8_t* command) {
     return program;
 }
 
+/* int32_t execute(const uint8_t* command);
+ * Inputs: const uint8_t* command = command to execute
+ * Return Value: 0 on success, -1 on failure
+ * Function: Load and execute a new program */
 int32_t execute(const uint8_t* command){
     if (command == NULL) {
         return -1;
@@ -157,9 +166,8 @@ int32_t execute(const uint8_t* command){
     }
 
     /* Get new pid */
-    uint32_t pid = get_next_pid();
-
-    if (pid < 0) {
+    uint32_t pid;
+    if ((pid = get_next_pid()) == -1) {
         return -1;
     }
 
@@ -167,11 +175,14 @@ int32_t execute(const uint8_t* command){
     set_program_page(pid);
 
     /* Load file into memory */
-    load_program_image(program);
+    uint32_t prog_entry;
+    if ((prog_entry = load_program_image(program)) == -1) {
+        return -1;
+    }
 
     /* Create PCB */
     pcb_t *prog_pcb;
-    if ((prog_pcb = get_next_pcb()) == NULL) {
+    if ((prog_pcb = get_pcb(pid)) == NULL) {
         return -1;
     }
 
