@@ -34,7 +34,7 @@ pcb_t *get_next_pcb() {
         return NULL;
     }
 
-    return (pcb_t *) (BLOCK_VIRTUAL - (next_pid + 1) * BLOCK_SIZE);
+    return (pcb_t *) (KERNAL_STACK - (next_pid + 1) * KERNEL_STACK_SIZE);
 }
 
 
@@ -105,9 +105,9 @@ uint32_t load_program_image(const uint8_t *program_name) {
     return prog_entry;
 }
 
-int32_t sys_halt (uint8_t status){}
-int32_t sys_execute (const uint8_t* command){}
-int32_t sys_read (int32_t fd, void* buf, int32_t nbytes){}
-int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes){}
-int32_t sys_open (const uint8_t* filename){}
-int32_t sys_close (int32_t fd){}
+int32_t halt (uint8_t status){}
+int32_t execute (const uint8_t* command){}
+int32_t read (int32_t fd, void* buf, int32_t nbytes){}
+int32_t write (int32_t fd, const void* buf, int32_t nbytes){}
+int32_t open (const uint8_t* filename){}
+int32_t close (int32_t fd){}

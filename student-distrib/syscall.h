@@ -17,8 +17,8 @@
 #define PROGRAM_SPACE 0x400000 // 4MB
 
 /* Block that contains PCB at the top and kernel stack at the bottom */
-#define BLOCK_VIRTUAL 0x800000 // 8MB 
-#define BLOCK_SIZE 0x2000 //8KB
+#define KERNAL_STACK 0x800000 // 8MB 
+#define KERNEL_STACK_SIZE 0x2000 //8KB
 
 /* Paging offset */
 #define PAGE_DIR_OFFSET   22
@@ -54,11 +54,11 @@ typedef struct pcb {
     file_descriptor_t *fd_array[FD_ARRAY_SIZE];
 } pcb_t;
 
-int32_t sys_halt (uint8_t status);
-int32_t sys_execute (const uint8_t* command);
-int32_t sys_read (int32_t fd, void* buf, int32_t nbytes);
-int32_t sys_write (int32_t fd, const void* buf, int32_t nbytes);
-int32_t sys_open (const uint8_t* filename);
-int32_t sys_close (int32_t fd);
+int32_t halt (uint8_t status);
+int32_t execute (const uint8_t* command);
+int32_t read (int32_t fd, void* buf, int32_t nbytes);
+int32_t write (int32_t fd, const void* buf, int32_t nbytes);
+int32_t open (const uint8_t* filename);
+int32_t close (int32_t fd);
 
 #endif

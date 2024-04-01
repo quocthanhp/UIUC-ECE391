@@ -1,63 +1,54 @@
 #define ASM 1
 #include "x86_desc.h"
+
+.data
+    MIN_SYS_NUM = 1
+    MAX_SYS_NUM = 6
+
 .GLOBAL     syscall_handler
 
-
 syscall_handler:
-
-    #pushl   gs
-    #pushl   fs
-    #pushl   es
-    #pushl   ds
-
-    
     pushfl
     pushl   %ebp
     pushl   %edi
     pushl   %esi
     pushl   %esp
-    pushl   %ebx
-    pushl   %ecx
+    
+    #Push arguments to handler
     pushl   %edx
+    pushl   %ecx
+    pushl   %ebx
 
-    cmpl    $0, %eax
-    jle     bad
+    cmpl    $MIN_SYS_NUM, %eax
+    jb      bad
 
-    cmpl    $10, %eax
+    cmpl    $MAX_SYS_NUM, %eax
     ja      bad
 
     call *systemcall_jmptable(, %eax, 4)
     jmp done
 
 bad:
-
     movl    $-1, %eax
-    #iret
 
 done:
-
-    popl    %edx
-    popl    %ecx
     popl    %ebx
+    popl    %ecx
+    popl    %edx
     popl    %esp
     popl    %esi
     popl    %edi 
     popl    %ebp
     popfl
   
-    #popl    %ds
-    #popl    %es 
-    #popl    %fs 
-    #popl    %gs 
-
     iret 
 
 systemcall_jmptable:
-
-    .long   sys_halt
-    .long   sys_execute
-    .long   sys_read
-    .long   sys_write
-    .long   sys_open
-    .long   sys_close
+    .long   0x00
+    .long   halt
+    .long   execute
+    .long   read
+    .long   write
+    .long   open
+    .long   close
 
