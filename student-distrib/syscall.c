@@ -13,11 +13,11 @@ extern void flush_tlb();
  * Return Value: next process id
  * Function: Get next process id */
 uint32_t get_next_pid() {
-    uint32_t next_pid = ++curr_pid;
-    if (next_pid > MAX_PROCESSES) {
+    if (curr_pid == MAX_PROCESSES - 1) {
         return -1;
     }
 
+    uint32_t next_pid = ++curr_pid;
     return next_pid;
 }
 
