@@ -4,7 +4,7 @@
 #include "lib.h"
 
 
-uint32_t pid = -1;
+uint32_t curr_pid = -1;
 extern void flush_tlb();
 
 
@@ -13,12 +13,12 @@ extern void flush_tlb();
  * Return Value: next process id
  * Function: Get next process id */
 uint32_t get_next_pid() {
-    pid = pid + 1;
-    if (pid > MAX_PROCESSES) {
+    uint32_t next_pid = ++curr_pid;
+    if (next_pid > MAX_PROCESSES) {
         return -1;
     }
 
-    return pid;
+    return next_pid;
 }
 
 /* pcb_t *get_next_pcb();
