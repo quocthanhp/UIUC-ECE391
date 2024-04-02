@@ -55,12 +55,12 @@ void set_program_page(uint32_t pid) {
  * Inputs: uint8_t *program_name = name of program to load
  * Return Value: entry point into program on success, -1 on failure
  * Function: Load program image into default program image address */
-uint32_t load_program_image(const uint8_t *program_name) {
+int32_t load_program_image(const uint8_t *program_name) {
     dentry_t dentry;
     uint32_t inode;
-    uint8_t *prog_buf;
     uint32_t prog_size;
     uint32_t prog_entry;
+    uint32_t prog_entry_size = 4;
 
     /* Look up program in fs */ 
     if (read_dentry_by_name(program_name, &dentry) == -1) {
@@ -71,20 +71,13 @@ uint32_t load_program_image(const uint8_t *program_name) {
     prog_size = ((inode_t *) inode_start + inode)->len;
 
     /* Read program data */ 
-    if (prog_size != read_data(inode, 0, prog_buf, prog_size)) {
+    if (prog_size != read_data(inode, 0, (uint8_t *) PROGRAM_IMAGE_VIRTUAL, prog_size)) {
         return -1;
     }
 
     /* Get entry point into program (bytes 24-27) */ 
-    prog_entry = *((uint32_t *) (prog_buf + 24));
-
-    /*  Copy into default program image address */
-    uint8_t *prog_ptr = (uint8_t *) PROGRAM_IMAGE_VIRTUAL;
-    int i;
-    for (i = 0; i < prog_size; i++) {
-        memcpy(prog_ptr, prog_buf, 1);
-        prog_ptr++;
-        prog_buf++;
+    if (prog_entry_size != read_data(inode, 24, (uint8_t *) &prog_entry, prog_entry_size)) {
+        return -1;
     }
 
     return prog_entry;
@@ -96,9 +89,9 @@ uint32_t load_program_image(const uint8_t *program_name) {
  * Function: Check if a file is valid (exits in fs and is executable) */
 int8_t is_valid_file(const uint8_t *file_name) {
     dentry_t dentry;
-    uint8_t *magic_num;
     uint8_t magic_num_size = 4;
-
+    uint8_t magic_num[magic_num_size];
+    
     /* Look up program in fs */ 
     if (read_dentry_by_name(file_name, &dentry) == -1) {
         return 0;
@@ -127,8 +120,8 @@ uint8_t *parse(const uint8_t* command) {
     }
 
     uint8_t *buf;
-    uint8_t *program;
-    program = buf;
+    uint8_t *fn;
+    fn = buf;
     int inWord = 0;
 
     while (*command != '\0') {
@@ -144,8 +137,8 @@ uint8_t *parse(const uint8_t* command) {
         }
         command++;
     }
-
-    return program;
+    *buf = '\0'; // For CP3
+    return fn;
 }
 
 /* int32_t execute(const uint8_t* command);
@@ -156,6 +149,8 @@ int32_t execute(const uint8_t* command){
     if (command == NULL) {
         return -1;
     }
+
+    /* TODO: CHECK FOR PARTIAL FUNCTIONALITY PROGRAM (FISH, CAT, GREP, SIGTEST) --> EXIT GRACEFULLY */
 
     /* Parse command to get file name of program */
     uint8_t *program = parse(command);
@@ -186,19 +181,50 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    /* Prepare for context switch */
+    prog_pcb->parent_id = 0; 
+    prog_pcb->pid = pid;
+    prog_pcb->eip = prog_entry;
 
-    /* Push IRET context to kernel stack */
+    /* Save current ebp */
+
+    /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
+    asm volatile ("                 \n\
+            pushl    %0             \n\
+            pushl    %1             \n\
+            pushfl                  \n\
+            pushl    %2             \n\
+            pushl    %3             \n\
+            "
+            :
+            : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL), "r" (USER_CS), "r" (prog_entry) 
+            : "memory"
+    );
 
     /* IRET */
+    asm volatile ("iret");
 
     /* return */
+    return 0;
 }
 
 
 
-int32_t halt (uint8_t status){}
-int32_t read (int32_t fd, void* buf, int32_t nbytes){}
-int32_t write (int32_t fd, const void* buf, int32_t nbytes){}
-int32_t open (const uint8_t* filename){}
-int32_t close (int32_t fd){}
+int32_t halt (uint8_t status){
+    return 0;
+}
+
+int32_t read (int32_t fd, void* buf, int32_t nbytes){
+    return 0;
+}
+
+int32_t write (int32_t fd, const void* buf, int32_t nbytes){
+    return 0;
+}
+
+int32_t open (const uint8_t* filename){
+    return 0;
+}
+
+int32_t close (int32_t fd){
+    return 0;
+}

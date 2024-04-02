@@ -15,7 +15,8 @@ BUG3:
 
 
 BUG4:
-    forgot to advance buffer on reading the remaining blocks in fs 
+    forgot to advance buffer on reading the remaining blocks in fs
 
-
+BUG5:
+    use pointer to read from file fill the last bytes with arbitrary values
 
