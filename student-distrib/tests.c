@@ -289,7 +289,7 @@ void launch_tests(){
 	// TEST_OUTPUT("rtc_test", test_interrupts());
 	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
 	// rtc_freq_test();
-	terminal_tests();
+	// terminal_tests();
 	// launch your tests here
 
 	//TEST_OUTPUT("dir_read_test", dir_read_test());

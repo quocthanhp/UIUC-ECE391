@@ -8,7 +8,8 @@
 
 /* Virtual address of user-level program */
 #define PROGRAM_VIRTUAL       0x8000000  // 128MB
-#define PROGRAM_IMAGE_VIRTUAL 0x0804800
+#define PROGRAM_IMAGE_VIRTUAL 0x8048000
+#define PROGRAM_STACK_VIRTUAL 0x8400000
 
 /* Physical address of user-level program */
 #define PROGRAM_PHYSICAL 0x800000 // 8MB

@@ -19,8 +19,6 @@ syscall_handler:
     pushl   %esi
     pushl   %esp
     
-    movw $KERNEL_DS, %ds
-    
     # Push arguments to handler
     pushl   %edx
     pushl   %ecx
