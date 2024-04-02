@@ -186,6 +186,8 @@ int32_t execute(const uint8_t* command){
     prog_pcb->eip = prog_entry;
 
     /* Save current ebp */
+    register uint32_t saved_ebp asm("ebp"); 
+    prog_pcb->ebp = saved_ebp;
 
     /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
     asm volatile ("                 \n\
