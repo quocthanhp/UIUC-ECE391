@@ -8,37 +8,47 @@
 .GLOBAL     syscall_handler
 
 syscall_handler:
+
+    # save all regs 
     pushfl
+    pushl   %ebx
+    pushl   %ecx
+    pushl   %edx
     pushl   %ebp
     pushl   %edi
     pushl   %esi
     pushl   %esp
     
-    #Push arguments to handler
+    movw $KERNEL_DS, %ds
+    
+    # Push arguments to handler
     pushl   %edx
     pushl   %ecx
     pushl   %ebx
 
+
+    # check system call number
     cmpl    $MIN_SYS_NUM, %eax
     jb      bad
-
     cmpl    $MAX_SYS_NUM, %eax
     ja      bad
 
     call *systemcall_jmptable(, %eax, 4)
-    jmp done
+
+    addl     $12, %esp     
+    jmp     done
 
 bad:
     movl    $-1, %eax
 
 done:
-    popl    %ebx
-    popl    %ecx
-    popl    %edx
     popl    %esp
     popl    %esi
     popl    %edi 
     popl    %ebp
+    popl    %edx
+    popl    %ecx
+    popl    %ebx
     popfl
   
     iret 

@@ -198,7 +198,23 @@ int32_t execute(const uint8_t* command){
 
 
 int32_t halt (uint8_t status){}
-int32_t read (int32_t fd, void* buf, int32_t nbytes){}
-int32_t write (int32_t fd, const void* buf, int32_t nbytes){}
+
+
+int32_t read (int32_t fd, void* buf, int32_t nbytes){
+    if(fd > 8 || fd < 0) return -1;
+    if(buf == NULL)return -1;
+    if(nbytes < 0)return -1;
+}
+int32_t write (int32_t fd, const void* buf, int32_t nbytes){
+    if(fd > 8 || fd < 0) return -1;
+    if(buf == NULL)return -1;
+    if(nbytes < 0)return -1;
+}
 int32_t open (const uint8_t* filename){}
-int32_t close (int32_t fd){}
+int32_t close (int32_t fd){
+    if(fd > 8 || fd < 0) return -1;
+}
+
+pcb_t* get_current_pcb(void){
+    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+}
