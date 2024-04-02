@@ -30,6 +30,10 @@
 #define MAGIC_2 0x4C
 #define MAGIC_3 0x46  
 
+/* status of fd "flags" */
+#define FD_FREE 0
+#define FD_BUSY 1
+
 typedef struct file_operations {
     int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
     int32_t (*write) (int32_t fd, const void* buf, int32_t nbytes);
@@ -42,7 +46,7 @@ typedef struct file_descriptor {
     file_operations_t *file_operations;
     uint32_t inode;
     uint32_t file_position;
-    uint32_t flags;
+    uint32_t flags;       /* use FD_FREE/BUSY */
 } file_descriptor_t ;
 
 
