@@ -221,17 +221,45 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
     if(nbytes < 0)return -1;
+
+    pcb_t* curr_pcb = get_current_pcb();
+    /* fd must be BUSY to read */
+    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+
+    curr_pcb->fd_array[fd]->file_operations->read(fd,buf,nbytes);
+
+    return 0;
 }
+
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
     if(nbytes < 0)return -1;
-}
-int32_t open (const uint8_t* filename){}
-int32_t close (int32_t fd){
-    if(fd > 8 || fd < 0) return -1;
+
+    pcb_t* curr_pcb = get_current_pcb();
+    /* fd must be BUSY to write */
+    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+
+    curr_pcb->fd_array[fd]->file_operations->write(fd,buf,nbytes);
+
+    return 0;
 }
 
+int32_t open (const uint8_t* filename){
+        pcb_t* curr_pcb = get_current_pcb();
+}
+
+int32_t close (int32_t fd){
+    if(fd > 8 || fd < 0) return -1;
+    pcb_t* curr_pcb = get_current_pcb();
+    /* fd is already closed return fail */
+    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+
+    curr_pcb->fd_array[fd]->flags == FD_FREE;
+    return 0;
+}
+
+/* helper */
 pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
