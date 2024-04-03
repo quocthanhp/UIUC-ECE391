@@ -181,7 +181,12 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    prog_pcb->parent_id = 0; 
+    if (pid == 0) {
+        prog_pcb->parent_id = 0; 
+    } else {
+        prog_pcb->parent_id = pid - 1;
+    }
+
     prog_pcb->pid = pid;
     prog_pcb->eip = prog_entry;
 
@@ -190,7 +195,7 @@ int32_t execute(const uint8_t* command){
     prog_pcb->ebp = saved_ebp;
 
     /* Modify TSS */
-    tss.esp0 = KERNAL_STACK - pid * KERNEL_STACK_SIZE;
+    tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
 
     /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
     asm volatile ("                 \n\
@@ -201,7 +206,7 @@ int32_t execute(const uint8_t* command){
             pushl    %3             \n\
             "
             :
-            : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL), "r" (USER_CS), "r" (prog_entry) 
+            : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL - 4), "r" (USER_CS), "r" (prog_entry) 
             : "memory"
     );
 
@@ -215,6 +220,11 @@ int32_t execute(const uint8_t* command){
 
 
 int32_t halt (uint8_t status){}
+
+/* helper */
+pcb_t* get_current_pcb(void){
+    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+}
 
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
@@ -255,11 +265,7 @@ int32_t close (int32_t fd){
     /* fd is already closed return fail */
     if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd]->flags == FD_FREE;
+    curr_pcb->fd_array[fd]->flags = FD_FREE;
     return 0;
 }
 
-/* helper */
-pcb_t* get_current_pcb(void){
-    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
-}

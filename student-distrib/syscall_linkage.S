@@ -33,7 +33,7 @@ syscall_handler:
 
     call *systemcall_jmptable(, %eax, 4)
 
-    addl     $12, %esp     
+    #addl     $12, %esp     
     jmp     done
 
 bad:
