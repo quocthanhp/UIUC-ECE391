@@ -189,6 +189,9 @@ int32_t execute(const uint8_t* command){
     register uint32_t saved_ebp asm("ebp"); 
     prog_pcb->ebp = saved_ebp;
 
+    /* Modify TSS */
+    tss.esp0 = KERNAL_STACK - pid * KERNEL_STACK_SIZE;
+
     /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
     asm volatile ("                 \n\
             pushl    %0             \n\
