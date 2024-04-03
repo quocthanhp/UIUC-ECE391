@@ -247,6 +247,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
+
+        // check the fd (if its invalid) 
+        // return value on invalid defined in document
+        // if valid, check fd for which operation needs to be called
+        // (rtc , or general file)
 }
 
 int32_t close (int32_t fd){
