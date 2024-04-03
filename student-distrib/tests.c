@@ -288,7 +288,7 @@ void launch_tests(){
 	// TEST_OUTPUT("divide by zero test", divide_by_zero_test());
 	// TEST_OUTPUT("rtc_test", test_interrupts());
 	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
-	// rtc_freq_test();
+	 rtc_freq_test();
 	// terminal_tests();
 	// launch your tests here
 
