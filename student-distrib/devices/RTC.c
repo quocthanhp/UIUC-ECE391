@@ -46,10 +46,11 @@ void rtc_interrupt(void){
     // outb(STATUSA, CMOS_CMD);
     // outb((prev & 0xF0) | rate, CMOS_DATA);
     rtc_int_flag = 1; // set flag
-    outb(STATUSA, CMOS_CMD);
-    outb(STATUSB, CMOS_CMD);
-    outb(STATUSC, CMOS_CMD);
-
+     outb(STATUSA, CMOS_CMD);
+     outb(STATUSB, CMOS_CMD);
+    // outb(STATUSC, CMOS_CMD);
+    outb(0x0C, 0x70);
+    inb(0x71);
    // char prev = inb(CMOS_DATA);
     send_eoi(8);
 

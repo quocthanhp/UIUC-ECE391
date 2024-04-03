@@ -217,9 +217,12 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
+/* helper */
+pcb_t* get_current_pcb(void){
+    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+}
 
-
-int32_t halt (uint8_t status){}
+int32_t halt (uint8_t status){return 0;}
 
 /* helper */
 pcb_t* get_current_pcb(void){
@@ -232,7 +235,8 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(buf == NULL)return -1;
     if(nbytes < 0)return -1;
 
-    pcb_t* curr_pcb = get_current_pcb();
+    pcb_t* curr_pcb; 
+    curr_pcb = get_current_pcb();
     /* fd must be BUSY to read */
     if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
 
@@ -246,7 +250,8 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(buf == NULL)return -1;
     if(nbytes < 0)return -1;
 
-    pcb_t* curr_pcb = get_current_pcb();
+    pcb_t* curr_pcb; 
+    curr_pcb = get_current_pcb();
     /* fd must be BUSY to write */
     if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
 
@@ -257,11 +262,19 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
+
+        // check the fd (if its invalid) 
+        // return value on invalid defined in document
+        // if valid, check fd for which operation needs to be called
+        // (rtc , or general file)
+        // check what kind of file has been called by checking their respective flags (executable blah blah blah)
+        return 0;
 }
 
 int32_t close (int32_t fd){
     if(fd > 8 || fd < 0) return -1;
-    pcb_t* curr_pcb = get_current_pcb();
+    pcb_t* curr_pcb; 
+    curr_pcb = get_current_pcb();
     /* fd is already closed return fail */
     if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
 
@@ -269,3 +282,7 @@ int32_t close (int32_t fd){
     return 0;
 }
 
+/* helper */
+pcb_t* get_current_pcb(void){
+    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+}
