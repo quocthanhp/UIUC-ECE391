@@ -224,12 +224,6 @@ pcb_t* get_current_pcb(void){
 
 int32_t halt (uint8_t status){return 0;}
 
-/* helper */
-pcb_t* get_current_pcb(void){
-    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
-}
-
-
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -282,7 +276,4 @@ int32_t close (int32_t fd){
     return 0;
 }
 
-/* helper */
-pcb_t* get_current_pcb(void){
-    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
-}
+
