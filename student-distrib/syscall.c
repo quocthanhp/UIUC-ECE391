@@ -212,9 +212,12 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
+/* helper */
+pcb_t* get_current_pcb(void){
+    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+}
 
-
-int32_t halt (uint8_t status){}
+int32_t halt (uint8_t status){return 0;}
 
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
@@ -255,6 +258,7 @@ int32_t open (const uint8_t* filename){
         // if valid, check fd for which operation needs to be called
         // (rtc , or general file)
         // check what kind of file has been called by checking their respective flags (executable blah blah blah)
+        return 0;
 }
 
 int32_t close (int32_t fd){
@@ -264,11 +268,8 @@ int32_t close (int32_t fd){
     /* fd is already closed return fail */
     if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd]->flags == FD_FREE;
+    curr_pcb->fd_array[fd]->flags = FD_FREE;
     return 0;
 }
 
-/* helper */
-pcb_t* get_current_pcb(void){
-    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
-}
+
