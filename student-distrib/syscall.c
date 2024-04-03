@@ -252,6 +252,7 @@ int32_t open (const uint8_t* filename){
         // return value on invalid defined in document
         // if valid, check fd for which operation needs to be called
         // (rtc , or general file)
+        // check what kind of file has been called by checking their respective flags (executable blah blah blah)
 }
 
 int32_t close (int32_t fd){
