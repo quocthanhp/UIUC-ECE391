@@ -252,13 +252,45 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
-
+        dentry_t* dentry;
         // check the fd (if its invalid) 
+        if(filename == NULL){return -1;}
         // return value on invalid defined in document
+        if(read_dentry_by_name(filename, dentry) == -1){return -1;}
         // if valid, check fd for which operation needs to be called
-        // (rtc , or general file)
-        // check what kind of file has been called by checking their respective flags (executable blah blah blah)
-        return 0;
+        int i;
+        /* first two are std in/out */
+        /* find first free fd slot */
+        for(i = 2; i < FD_ARRAY_SIZE; i++){
+            if(curr_pcb->fd_array[i]->flags == FD_FREE){
+                curr_pcb->fd_array[i]->inode == dentry->inode_num;
+                curr_pcb->fd_array[i]->file_position == 0;
+                curr_pcb->fd_array[i]->flags == FD_BUSY;
+                // (rtc , or general file)
+                switch (dentry->file_type)
+                {
+                case 0:
+                    /* code */
+                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    break;
+                case 1:
+                    /* code */
+                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    break;
+                case 2:
+                    /* code */
+                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    break;
+                
+                default:
+                    break;
+                }
+                return 0;
+            }
+            return -1;
+        }
+        // check what kind of file has been called by checking their respective flags 
+        // (executable blah blah blah)
 }
 
 int32_t close (int32_t fd){
