@@ -44,7 +44,7 @@ typedef struct file_operations {
 
 
 typedef struct file_descriptor {
-    file_operations_t *file_operations;
+    file_operations_t file_operations;
     uint32_t inode;
     uint32_t file_position;
     uint32_t flags;       /* use FD_FREE/BUSY */
@@ -56,7 +56,7 @@ typedef struct pcb {
     uint32_t parent_id;
     uint32_t ebp;
     uint32_t eip;
-    file_descriptor_t *fd_array[FD_ARRAY_SIZE];
+    file_descriptor_t fd_array[FD_ARRAY_SIZE];
 } pcb_t;
 
 int32_t halt (uint8_t status);

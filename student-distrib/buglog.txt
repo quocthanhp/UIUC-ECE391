@@ -20,3 +20,8 @@ BUG4:
 BUG5:
     use pointer to read from file fill the last bytes with arbitrary values
 
+BUG6: 
+    cannot access memory at address 0x8400000 -> -4 to kernel stack 
+
+BUG7:
+    use dynamic file_operations in fd causes page fault -> use static

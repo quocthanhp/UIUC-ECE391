@@ -3,6 +3,7 @@
  */
 
 #include "multiboot.h"
+#include "syscall.h"
 #include "x86_desc.h"
 #include "lib.h"
 #include "i8259.h"
@@ -178,7 +179,7 @@ void entry(unsigned long magic, unsigned long addr) {
       launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
-
+    // execute((const uint8_t *)"testprint");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }
