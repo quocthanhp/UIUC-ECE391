@@ -3,6 +3,7 @@
 #include "fs.h"
 #include "lib.h"
 #include "terminal.h"
+#include "devices/RTC.h"
 
 
 uint32_t curr_pid = -1;
@@ -281,24 +282,34 @@ int32_t open (const uint8_t* filename){
         /* first two are std in/out */
         /* find first free fd slot */
         for(i = 2; i < FD_ARRAY_SIZE; i++){
-            if(curr_pcb->fd_array[i]->flags == FD_FREE){
-                curr_pcb->fd_array[i]->inode == dentry->inode_num;
-                curr_pcb->fd_array[i]->file_position == 0;
-                curr_pcb->fd_array[i]->flags == FD_BUSY;
+            if(curr_pcb->fd_array[i].flags == FD_FREE){
+                curr_pcb->fd_array[i].inode == dentry->inode_num;
+                curr_pcb->fd_array[i].file_position == 0;
+                curr_pcb->fd_array[i].flags == FD_BUSY;
                 // (rtc , or general file)
                 switch (dentry->file_type)
                 {
                 case 0:
                     /* code */
-                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    curr_pcb->fd_array[i].file_operations.open = rtc_open;
+                    curr_pcb->fd_array[i].file_operations.close = rtc_close;
+                    curr_pcb->fd_array[i].file_operations.read = rtc_read;
+                    curr_pcb->fd_array[i].file_operations.write = rtc_write;
+
                     break;
                 case 1:
                     /* code */
-                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    curr_pcb->fd_array[i].file_operations.open = dir_open;
+                    curr_pcb->fd_array[i].file_operations.close = dir_close;
+                    curr_pcb->fd_array[i].file_operations.read = dir_read;
+                    curr_pcb->fd_array[i].file_operations.write = dir_write;
                     break;
                 case 2:
                     /* code */
-                    curr_pcb->fd_array[i]->file_operations->open(filename);
+                    curr_pcb->fd_array[i].file_operations.open = file_open;
+                    curr_pcb->fd_array[i].file_operations.close = file_close;
+                    curr_pcb->fd_array[i].file_operations.read = file_read;
+                    curr_pcb->fd_array[i].file_operations.write = file_write;
                     break;
                 
                 default:
