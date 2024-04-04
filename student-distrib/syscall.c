@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "fs.h"
 #include "lib.h"
+#include "terminal.h"
 
 
 uint32_t curr_pid = -1;
@@ -194,6 +195,20 @@ int32_t execute(const uint8_t* command){
     register uint32_t saved_ebp asm("ebp"); 
     prog_pcb->ebp = saved_ebp;
 
+    /* Set fd array */
+
+    // How to set other read/write/open/close ?
+
+    // First entry is for stdin (terminal read)
+    prog_pcb->fd_array[0].file_operations.read = terminal_read;
+    prog_pcb->fd_array[0].inode = 0; 
+    prog_pcb->fd_array[0].flags = FD_BUSY; // ???
+
+    // Second entry is for stdout (terminal write)
+    prog_pcb->fd_array[1].file_operations.write = terminal_write;
+    prog_pcb->fd_array[1].inode = 0;
+    prog_pcb->fd_array[1].flags = FD_BUSY; // ???
+
     /* Modify TSS */
     tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
 
@@ -232,9 +247,9 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
     /* fd must be BUSY to read */
-    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+    if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd]->file_operations->read(fd,buf,nbytes);
+    curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
 
     return 0;
 }
@@ -247,9 +262,9 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
     /* fd must be BUSY to write */
-    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+    if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd]->file_operations->write(fd,buf,nbytes);
+    curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
 
     return 0;
 }
@@ -270,9 +285,9 @@ int32_t close (int32_t fd){
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
     /* fd is already closed return fail */
-    if(curr_pcb->fd_array[fd]->flags == FD_FREE) return -1; 
+    if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd]->flags = FD_FREE;
+    curr_pcb->fd_array[fd].flags = FD_FREE;
     return 0;
 }
 
