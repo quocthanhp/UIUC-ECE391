@@ -25,3 +25,6 @@ BUG6:
 
 BUG7:
     use dynamic file_operations in fd causes page fault -> use static
+
+BUG8:
+    use buffer ptr in parse func causes page fault -> use static
