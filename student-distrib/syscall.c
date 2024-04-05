@@ -321,8 +321,8 @@ int32_t open (const uint8_t* filename){
                 }
                 return 0;
             }
-            return -1;
         }
+        return -1;
         // check what kind of file has been called by checking their respective flags 
         // (executable blah blah blah)
 }
