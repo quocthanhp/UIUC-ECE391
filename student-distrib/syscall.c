@@ -225,6 +225,7 @@ int32_t execute(const uint8_t* command){
             : "memory"
     );
 
+    // This is for re-enabling IF (which is turned off once reaching interrupt gate)
     // popl     %%eax          \n\
     //         orl      $0x200,%%eax   \n\
     //         pushl    %%eax          \n\
@@ -286,9 +287,9 @@ int32_t open (const uint8_t* filename){
         /* find first free fd slot */
         for(i = 2; i < FD_ARRAY_SIZE; i++){
             if(curr_pcb->fd_array[i].flags == FD_FREE){
-                curr_pcb->fd_array[i].inode == dentry->inode_num;
-                curr_pcb->fd_array[i].file_position == 0;
-                curr_pcb->fd_array[i].flags == FD_BUSY;
+                curr_pcb->fd_array[i].inode = dentry->inode_num;
+                curr_pcb->fd_array[i].file_position = 0;
+                curr_pcb->fd_array[i].flags = FD_BUSY;
                 // (rtc , or general file)
                 switch (dentry->file_type)
                 {
