@@ -226,6 +226,7 @@ int32_t execute(const uint8_t* command){
             : "memory"
     );
 
+    // This is for re-enabling IF (which is turned off once reaching interrupt gate)
     // popl     %%eax          \n\
     //         orl      $0x200,%%eax   \n\
     //         pushl    %%eax          \n\
