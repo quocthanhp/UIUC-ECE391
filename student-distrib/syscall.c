@@ -117,31 +117,29 @@ int8_t is_valid_file(const uint8_t *file_name) {
  * Inputs: const uint8_t* command = command to parse
  * Return Value: program file name
  * Function: Extract the program file name */
-uint8_t *parse(const uint8_t* command) {
+uint8_t buffer[128];
+void parse(const uint8_t* command) {
     if (command == NULL) {
-        return NULL;
+        return;
     }
-
-    uint8_t *buf;
-    uint8_t *fn;
-    fn = buf;
     int inWord = 0;
 
-    while (*command != '\0') {
-        if (*command == ' ' && inWord) {
+    memset(buffer, 0, 128);
+    int i = 0;
+    int j = 0;
+    while (command[i] != '\0') {
+        if (command[i] == ' ' && inWord) {
             inWord = 0;
-            *buf = '\0'; // null-terminate word
+            buffer[j] = '\0'; // null-terminate word
             break;
         }
-        else if (*command != ' ') {
-            memcpy(buf, command, 1);
+        else if (command[i] != ' ') {
+            buffer[j] = command[i];
             inWord = 1;
-            buf++;
+            j++;
         }
-        command++;
+        i++;
     }
-    *buf = '\0'; // For CP3
-    return fn;
 }
 
 /* int32_t execute(const uint8_t* command);
@@ -156,10 +154,10 @@ int32_t execute(const uint8_t* command){
     /* TODO: CHECK FOR PARTIAL FUNCTIONALITY PROGRAM (FISH, CAT, GREP, SIGTEST) --> EXIT GRACEFULLY */
 
     /* Parse command to get file name of program */
-    uint8_t *program = parse(command);
+    parse(command);
 
     /* Check file validity */
-    if (!is_valid_file(program)) {
+    if (!is_valid_file(buffer)) {
         return -1;
     }
 
@@ -174,7 +172,7 @@ int32_t execute(const uint8_t* command){
 
     /* Load file into memory */
     uint32_t prog_entry;
-    if ((prog_entry = load_program_image(program)) == -1) {
+    if ((prog_entry = load_program_image(buffer)) == -1) {
         return -1;
     }
 
@@ -219,20 +217,20 @@ int32_t execute(const uint8_t* command){
             pushl    %0             \n\
             pushl    %1             \n\
             pushfl                  \n\
-            popl     %%eax          \n\
-            orl      $0x200,%%eax   \n\
-            pushl    %%eax          \n\
             pushl    %2             \n\
             pushl    %3             \n\
-            iret                    \n\
             "
             :
             : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL - 4), "r" (USER_CS), "r" (prog_entry) 
             : "memory"
     );
 
+    // popl     %%eax          \n\
+    //         orl      $0x200,%%eax   \n\
+    //         pushl    %%eax          \n\
+
     /* IRET */
-    //asm volatile ("iret");
+    asm volatile ("iret");
 
     /* return */
     return 0;
