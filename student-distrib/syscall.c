@@ -8,7 +8,8 @@
 
 uint32_t curr_pid = -1;
 extern void flush_tlb();
-
+//assembly function for halt
+extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t return_val);
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -241,7 +242,57 @@ pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
-int32_t halt (uint8_t status){return 0;}
+int32_t halt (uint8_t return_val){
+    
+    pcb_t* cur_pcb_ptr = get_cur_pcb();
+
+    if(cur_pcb_ptr->pid == 0){
+
+        uint32_t esp_arg = cur_pcb_ptr->ebp; //esp 
+        uint32_t eip_arg = cur_pcb_ptr->eip; //eip
+
+        asm volatile ("             \n\
+            andl    $0x00FF, %%ebx  \n\
+            movw    %%bx, %%ds      \n\
+            pushl   %%ebx           \n\
+            pushl   %%edx           \n\
+            pushfl                  \n\
+            popl    %%edx           \n\
+            orl     $0x0200, %%edx  \n\
+            pushl   %%edx           \n\
+            pushl   %%ecx           \n\
+            pushl   %%eax           \n\
+            iret                    \n\
+            "
+            :
+            : "a"(eip_arg), "b"(USER_DS), "c"(USER_CS), "d"(esp_arg)
+            : "memory"
+        );
+    }
+
+    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id);
+    cur_pcb_ptr = cur_pcb_ptr->parent_id;
+    curr_pid = parent_pcb_ptr->parent_id;
+    cur_pcb_ptr->pid = 0; //resetting pid 
+    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
+    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
+    flush_tlb();
+
+
+    int32_t i;
+    // close all file descriptors
+    for(i=0; i< FD_ARRAY_SIZE; i++){
+        cur_pcb_ptr->fd_array[i].flags = 0;
+    }
+
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
+
+    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, return_val); // assuming esp and ebp are the same
+
+    return -1;
+}
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
