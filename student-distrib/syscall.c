@@ -8,8 +8,7 @@
 
 uint32_t curr_pid = -1;
 extern void flush_tlb();
-//assembly function for halt
-extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t return_val);
+extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t status)
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -243,7 +242,7 @@ pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
-int32_t halt (uint8_t return_val){
+int32_t halt (uint8_t status){
     
     pcb_t* cur_pcb_ptr = get_cur_pcb();
 
@@ -290,7 +289,7 @@ int32_t halt (uint8_t return_val){
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
 
-    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, return_val); // assuming esp and ebp are the same
+    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, status); // assuming esp and ebp are the same
 
     return -1;
 }

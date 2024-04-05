@@ -59,7 +59,6 @@ systemcall_jmptable:
     .long   open
     .long   close
 
-
 halt_function:
 
     pushl %ebp
