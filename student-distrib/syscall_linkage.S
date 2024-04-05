@@ -24,7 +24,6 @@ syscall_handler:
     pushl   %ecx
     pushl   %ebx
 
-
     # check system call number
     cmpl    $MIN_SYS_NUM, %eax
     jb      bad

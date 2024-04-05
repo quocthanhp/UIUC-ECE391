@@ -213,7 +213,10 @@ void ControlProtectionException(){
     printf("EXCEPTION: Control Protection Exception\n");
     while(1);
 }
-    
+
+
+extern void syscall_handler();
+
 /*
 idt_init
 initializing and mapping for exception handling
@@ -239,8 +242,6 @@ void idt_init(void){
         idt[i].reserved4 = 0;
         idt[i].present = 1;
         idt[i].size = 1;
-
-
     }
 
     //exception
@@ -271,5 +272,5 @@ void idt_init(void){
     SET_IDT_ENTRY(idt[0x21],keyboard_interrupt_1);
     SET_IDT_ENTRY(idt[0x28],rtc_interrupt_1);
     //system calls
-    // SET_IDT_ENTRY(idt[0x80],syscall);
+    SET_IDT_ENTRY(idt[0x80],syscall_handler);
 }

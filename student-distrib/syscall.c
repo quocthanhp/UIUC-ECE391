@@ -47,6 +47,7 @@ void set_program_page(uint32_t pid) {
     page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
     page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
     page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
+    page_directory[pde_id].pde_MB.isReadWrite = 1;
     page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
 
     flush_tlb();
@@ -202,12 +203,12 @@ int32_t execute(const uint8_t* command){
     // First entry is for stdin (terminal read)
     prog_pcb->fd_array[0].file_operations.read = terminal_read;
     prog_pcb->fd_array[0].inode = 0; 
-    prog_pcb->fd_array[0].flags = FD_BUSY; // ???
+    prog_pcb->fd_array[0].flags = FD_BUSY; 
 
     // Second entry is for stdout (terminal write)
     prog_pcb->fd_array[1].file_operations.write = terminal_write;
     prog_pcb->fd_array[1].inode = 0;
-    prog_pcb->fd_array[1].flags = FD_BUSY; // ???
+    prog_pcb->fd_array[1].flags = FD_BUSY; 
 
     /* Modify TSS */
     tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
@@ -217,8 +218,12 @@ int32_t execute(const uint8_t* command){
             pushl    %0             \n\
             pushl    %1             \n\
             pushfl                  \n\
+            popl     %%eax          \n\
+            orl      $0x200,%%eax   \n\
+            pushl    %%eax          \n\
             pushl    %2             \n\
             pushl    %3             \n\
+            iret                    \n\
             "
             :
             : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL - 4), "r" (USER_CS), "r" (prog_entry) 
@@ -226,7 +231,7 @@ int32_t execute(const uint8_t* command){
     );
 
     /* IRET */
-    asm volatile ("iret");
+    //asm volatile ("iret");
 
     /* return */
     return 0;
