@@ -5,6 +5,7 @@
 #include "devices/keyboard.h"
 #include "terminal.h"
 #include "fs.h"
+#include "syscall.h"
 
 
 #define PASS 1
@@ -278,6 +279,18 @@ int read_data_large_file_test() {
 }
 
 /* Checkpoint 3 tests */
+int cp3_close_test(){
+	int32_t fd = 1;
+	pcb_t* test_pcb;
+	clear();
+
+	test_pcb->fd_array->flags = FD_FREE;
+	printf("%d", close(fd));
+	test_pcb->fd_array->flags = FD_BUSY;
+	printf("%d", close(fd));
+	
+	return 0;
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -290,6 +303,9 @@ void launch_tests(){
 	// TEST_OUTPUT("dereference null test", dereferenced_null_pointer_test());
 	// rtc_freq_test();
 	// terminal_tests();
+
+	//cp3_close_test();
+
 	// launch your tests here
 
 	//TEST_OUTPUT("dir_read_test", dir_read_test());

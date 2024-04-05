@@ -286,9 +286,9 @@ int32_t open (const uint8_t* filename){
         /* find first free fd slot */
         for(i = 2; i < FD_ARRAY_SIZE; i++){
             if(curr_pcb->fd_array[i].flags == FD_FREE){
-                curr_pcb->fd_array[i].inode == dentry->inode_num;
-                curr_pcb->fd_array[i].file_position == 0;
-                curr_pcb->fd_array[i].flags == FD_BUSY;
+                curr_pcb->fd_array[i].inode = dentry->inode_num;
+                curr_pcb->fd_array[i].file_position = 0;
+                curr_pcb->fd_array[i].flags = FD_BUSY;
                 // (rtc , or general file)
                 switch (dentry->file_type)
                 {
@@ -320,8 +320,8 @@ int32_t open (const uint8_t* filename){
                 }
                 return 0;
             }
-            return -1;
         }
+        return -1;
         // check what kind of file has been called by checking their respective flags 
         // (executable blah blah blah)
 }
