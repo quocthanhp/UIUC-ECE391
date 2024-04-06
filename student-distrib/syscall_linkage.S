@@ -61,18 +61,22 @@ systemcall_jmptable:
 
 halt_function:
 
-    pushl %ebp
+    pushl %ebp         
     movl %esp, %ebp
 
+    xorl %ecx, %ecx
     xorl %ebx, %ebx
-    movl 16(%ebp), %ebx     
-    movl %ebx, %eax         
+    xorl %edi, %edi
 
-    movl 12(%ebp), %ebx     
-    movl %ebx, %esp   
+    movl 8(%ebp) , %ecx 
+    movl 12(%ebp), %ebx     ;ebx has the 2nd arg = parent ebp
+    movl 16(%ebp), %edi
 
-    movl 8(%ebp), %ebx       
-    movl %ebx, %ebp
+    movl %edi, %eax
+
+    movl %ebx, %ebp 
+
+    movl %ebp, %esp
 
     leave
     ret

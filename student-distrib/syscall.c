@@ -42,7 +42,8 @@ pcb_t *get_pcb(uint32_t pid) {
  * Return Value: None
  * Function: Set up paging for program */
 void set_program_page(uint32_t pid) {
-    uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    // uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    uint32_t pde_id = PROGRAM_PHYSICAL - ((pid + 1) * KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
     
     page_directory[pde_id].pde_MB.isPresent = 1; 
     page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
@@ -50,6 +51,23 @@ void set_program_page(uint32_t pid) {
     page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
     page_directory[pde_id].pde_MB.isReadWrite = 1;
     page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
+
+    flush_tlb();
+}
+
+/* reset_program_page(uint32_t pid);
+ * Inputs: uint32_t pid = process id
+ * Return Value: None
+ * Function: Set up paging for program */
+void reset_program_page(uint32_t pid) {
+    uint32_t pde_id = PROGRAM_PHYSICAL - ((pid+1) * KERNEL_STACK_SIZE);
+    
+    page_directory[pde_id].pde_MB.isPresent = 0; 
+    // page_directory[pde_id].pde_MB.isPageSize = 0; /* 4MB page */  
+    // page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
+    // page_directory[pde_id].pde_MB.isUserSupervisor = 0; /* user-level */ 
+    // page_directory[pde_id].pde_MB.isReadWrite = 0;
+    // page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
 
     flush_tlb();
 }
@@ -242,11 +260,17 @@ pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
+
+
+
+
 int32_t halt (uint8_t status){
     
+    //which process is running currently
     pcb_t* cur_pcb_ptr = get_cur_pcb();
+    pcb_t* saved_cur_pcb_ptr = cur_pcb_ptr;
 
-    if(cur_pcb_ptr->pid == 0){
+    if(cur_pcb_ptr->pid == 0){ // check if we are trying to exit from shell, double check the '0' entry 
 
         uint32_t esp_arg = cur_pcb_ptr->ebp; //esp 
         uint32_t eip_arg = cur_pcb_ptr->eip; //eip
@@ -270,28 +294,36 @@ int32_t halt (uint8_t status){
         );
     }
 
-    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id);
-    cur_pcb_ptr = cur_pcb_ptr->parent_id;
-    curr_pid = parent_pcb_ptr->parent_id;
-    cur_pcb_ptr->pid = 0; //resetting pid 
-    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
-    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
-    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
-    flush_tlb();
+    //default case (we are not in base shell)
 
-
+    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); //get the parent process
+    reset_program_page(cur_pcb_ptr->pid);
     int32_t i;
     // close all file descriptors
     for(i=0; i< FD_ARRAY_SIZE; i++){
         cur_pcb_ptr->fd_array[i].flags = 0;
     }
 
+    //need to clean up data structures used by current pid
+    //free up paging 
+    //free up 
+    
+    
+
+    cur_pcb_ptr = parent_pcb_ptr;                    //change the current process to point to the parent
+    curr_pid = parent_pcb_ptr->parent_id;            //change the current process' pid to point to the new parent id
+    cur_pcb_ptr->pid = curr_pid;
+
+    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
+    uint32_t program_index = (PROGRAM_VIRTUAL + curr_pid * PROGRAM_SPACE) >> PAGE_DIR_OFFSET;
+    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
+
+    flush_tlb();
+
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
 
-    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, status); // assuming esp and ebp are the same
-
-    return -1;
+    halt_function(saved_cur_pcb_ptr->ebp, parent_pcb_ptr->ebp, status);
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
