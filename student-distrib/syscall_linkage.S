@@ -59,3 +59,20 @@ systemcall_jmptable:
     .long   open
     .long   close
 
+halt_function:
+
+    pushl %ebp
+    movl %esp, %ebp
+
+    xorl %ebx, %ebx
+    movl 16(%ebp), %ebx     
+    movl %ebx, %eax         
+
+    movl 12(%ebp), %ebx     
+    movl %ebx, %esp   
+
+    movl 8(%ebp), %ebx       
+    movl %ebx, %ebp
+
+    leave
+    ret
