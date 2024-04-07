@@ -64,15 +64,11 @@ halt_function:
     pushl %ebp
     movl %esp, %ebp
 
-    xorl %ebx, %ebx
-    movl 16(%ebp), %ebx     
-    movl %ebx, %eax         
+    movl 16(%ebp), %eax         
 
-    movl 12(%ebp), %ebx     
-    movl %ebx, %esp   
+    movl 12(%ebp), %esp   
 
-    movl 8(%ebp), %ebx       
-    movl %ebx, %ebp
+    movl 8(%ebp), %ebp
 
     leave
     ret

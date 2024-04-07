@@ -8,210 +8,133 @@
  #include "handler.h"
 
 
-
-
-// void exc_handler(uint32_t interrupt_vector){
-//     switch(interrupt_vector){
-//         case x0: 
-//             printf("EXCEPTION: DIVIDE BY ZERO\n");
-//             while(1);
-//             break;
-//         case x1:
-//             printf("EXCEPTION: Debug\n");
-//             while(1);
-//             break;
-//         case x2:
-//             printf("EXCEPTION: non-maskable interrupt\n");
-//             while(1);
-//             break;
-//         case x3:
-//             printf("EXCEPETION: BREAKPOINT interrupt\n");
-//             while(1);
-//             break;
-//         case x4:
-//             printf("EXCEPTION: OVERFLOW interrupt\n");
-//             while(1);
-//             break;
-//         case x5:
-//             printf("EXCEPTION: Bound Range Exceeded\n");
-//             while(1);
-//             break;
-//         case x6:
-//             printf("EXCEPTION: Invalid Opcode\n");
-//             while(1);
-//             break;
-//         case x7:
-//             printf("EXCEPTION: device not available\n");
-//             while(1); 
-//             break;
-//         case x8:
-//             printf("EXCEPTION: Double Fault\n");
-//             while(1);
-//             break;
-//         /* never called */    
-//         case x9:
-//             printf("EXCEPTION: Coprocessor_Segment_Overrun\n");
-//             while(1);
-//             break;
-//         case xA:
-//             printf("EXCEPTION: Invalid Task State Segment\n");
-//             while(1);
-//             break;
-//         case xB:
-//             printf("EXCEPTION: Segment not present\n");
-//             while(1);
-//             break;
-//         case xC:
-//             printf("EXCEPTION: Stack Segment Fault\n");
-//             while(1);  
-//             break;
-//         case xD:
-//             printf("EXCEPTION: General Protection Fault\n");
-//             while(1);
-//             break;
-//         case xE:
-//             printf("EXCEPTION: Page Fault\n");
-//             while(1);  
-//             break;
-//         case xF:
-//             printf("EXCEPTION: reserved\n");
-//             while(1); 
-//             break;
-//         case x10:
-//             printf("EXCEPTION:x87 Floating Point Exception\n");
-//             while(1); 
-//             break;
-//         case x11:
-//             printf("EXCEPTION:Alignment Check\n");
-//             while(1);
-//             break;
-//         case x12:
-//             printf("Machine Check\n");
-//             while(1);
-//             break;
-//         case x13:
-//             printf("EXCEPTION: SIMD Floating-Point Exception\n");
-//             while(1);
-//             break;
-//         case x14:
-//             printf("EXCEPTION: Virtualization Exception\n");
-//             while(1);
-//             break;
-//         case x15:
-//             printf("EXCEPTION: Control Protection Exception\n");
-//             while(1);
-//             break;
-//         default:
-//             break; 
-//     }
-//     return;
-// }
-
 void dividebyzero(){
     printf("EXCEPTION: DIVIDE BY ZERO\n");
-    while(1);
+    halt(256);
+    
 }
 
 void Debug(){
     printf("EXCEPTION: Debug\n");
-    while(1);
+    halt(256);
+    
 }
 
 void Nonmaskableinterrupt(){
     printf("EXCEPTION: non-maskable interrupt\n");
-    while(1);
+    halt(256);
+    
 }
 void Breakpoint(){
     printf("EXCEPETION: BREAKPOINT interrupt\n");
-    while(1);
+    halt(256);
+    
 }
 
 void Overflow(){
     printf("EXCEPTION: OVERFLOW interrupt\n");
-    while(1);
+    halt(256);
+    
 }
 void BoundRangeExceeded(){
     printf("EXCEPTION: Bound Range Exceeded\n");
-    while(1);
+    halt(256);
+    
 }
 void InvalidOpcode(){
     printf("EXCEPTION: Invalid Opcode\n");
-    while(1);
+    halt(256);
+    
 }
 
 void devicenotavailable(){
     printf("EXCEPTION: device not available\n");
-    while(1);
+    halt(256);
+    
 }
 	
 void DoubleFault(){
     printf("EXCEPTION: Double Fault\n");
-    while(1);
+    halt(256);
+    
 }
 
 /* never called */    
 void CoprocessorSegmentOverrun(){
     printf("EXCEPTION: Coprocessor_Segment_Overrun\n");
-    while(1);
+    halt(256);
+    
 }
 void InvalidTaskStateSegment(){
     printf("EXCEPTION: Invalid Task State Segment\n");
-    while(1);
+    halt(256);
+    
 }
 
 void Segmentnotpresent(){
     printf("EXCEPTION: Segment not present\n");
-    while(1);
+    halt(256);
+    
 }
 
 void StackSegmentFault(){
     printf("EXCEPTION: Stack Segment Fault\n");
-    while(1);
+    halt(256);
+    
 }
     
 void GeneralProtectionFault(){
     printf("EXCEPTION: General Protection Fault\n");
-    while(1);
+    halt(256);
+    
 }
 
 void PageFault(){
     printf("EXCEPTION: Page Fault\n");
-    while(1);
+    halt(256);
+    
 }
     
 void reserved(){
     printf("EXCEPTION: reserved\n");
-    while(1);
+    halt(256);
+    
 }
     
 void x87FloatingPointException(){
     printf("EXCEPTION:x87 Floating Point Exception\n");
-    while(1);
+    halt(256);
+    
 }
     
 void AlignmentCheck(){
     printf("EXCEPTION:Alignment Check\n");
-    while(1);
+    halt(256);
+    
 }
     
 void MachineCheck(){
     printf("Machine Check\n");
-    while(1);
+    halt(256);
+    
 }
     
 void SIMDFloatingPointException(){
     printf("EXCEPTION: SIMD Floating-Point Exception\n");
-    while(1);
+    halt(256);
+    
 }
     
 void VirtualizationException(){
     printf("EXCEPTION: Virtualization Exception\n");
-    while(1);
+    halt(256);
+    
 }
 
 void ControlProtectionException(){
     printf("EXCEPTION: Control Protection Exception\n");
-    while(1);
+    halt(256);
+    
 }
 
 

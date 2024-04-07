@@ -8,7 +8,7 @@
 
 uint32_t curr_pid = -1;
 extern void flush_tlb();
-extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t status);
+extern void halt_function( uint32_t parent_ebp, uint32_t parent_esp, uint8_t status);
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -42,8 +42,8 @@ pcb_t *get_pcb(uint32_t pid) {
  * Return Value: None
  * Function: Set up paging for program */
 void set_program_page(uint32_t pid) {
-    // uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
-    uint32_t pde_id = PROGRAM_PHYSICAL - ((pid + 1) * KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
+    uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    // uint32_t pde_id = PROGRAM_PHYSICAL - (  KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
     
     page_directory[pde_id].pde_MB.isPresent = 1; 
     page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
@@ -270,38 +270,12 @@ int32_t halt (uint8_t status){
     pcb_t* cur_pcb_ptr = get_cur_pcb();
 
     if(cur_pcb_ptr->pid == 0){
-
-        uint32_t esp_arg = cur_pcb_ptr->ebp; //esp 
-        uint32_t eip_arg = cur_pcb_ptr->eip; //eip
-
-        asm volatile ("             \n\
-            andl    $0x00FF, %%ebx  \n\
-            movw    %%bx, %%ds      \n\
-            pushl   %%ebx           \n\
-            pushl   %%edx           \n\
-            pushfl                  \n\
-            popl    %%edx           \n\
-            orl     $0x0200, %%edx  \n\
-            pushl   %%edx           \n\
-            pushl   %%ecx           \n\
-            pushl   %%eax           \n\
-            iret                    \n\
-            "
-            :
-            : "a"(eip_arg), "b"(USER_DS), "c"(USER_CS), "d"(esp_arg)
-            : "memory"
-        );
+ //do nothing 
     }
 
-    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id);
-    cur_pcb_ptr = cur_pcb_ptr->parent_id;
-    curr_pid = parent_pcb_ptr->parent_id;
-    cur_pcb_ptr->pid = 0; //resetting pid 
-    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
-    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
-    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
-    flush_tlb();
+    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); 
 
+    
 
     int32_t i;
     // close all file descriptors
@@ -312,9 +286,19 @@ int32_t halt (uint8_t status){
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
 
-    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, status); // assuming esp and ebp are the same
+    cur_pcb_ptr = parent_pcb_ptr; //might not be required
+    curr_pid = parent_pcb_ptr->parent_id;
 
-    return -1;
+    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
+
+    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    
+    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
+    flush_tlb();
+
+    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->esp, status); // assuming esp and ebp are the same
+
+    return 0;
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
