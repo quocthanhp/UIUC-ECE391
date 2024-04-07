@@ -239,6 +239,11 @@ void idt_init(void){
         idt[i].reserved1 = 1;
         idt[i].reserved2 = 1;
         idt[i].reserved3 = 0;
+
+        if (i == 0x80) {
+            idt[i].reserved3 = 1;
+        }
+        
         idt[i].reserved4 = 0;
         idt[i].present = 1;
         idt[i].size = 1;

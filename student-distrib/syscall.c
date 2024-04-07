@@ -8,7 +8,7 @@
 
 uint32_t curr_pid = -1;
 extern void flush_tlb();
-extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t status)
+extern void halt_function(uint32_t ebp, uint32_t esp, uint8_t status);
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -130,7 +130,7 @@ void parse(const uint8_t* command) {
     while (command[i] != '\0') {
         if (command[i] == ' ' && inWord) {
             inWord = 0;
-            buffer[j] = '\0'; // null-terminate word
+            //buffer[j] = '\0'; // null-terminate word
             break;
         }
         else if (command[i] != ' ') {
@@ -193,7 +193,10 @@ int32_t execute(const uint8_t* command){
 
     /* Save current ebp */
     register uint32_t saved_ebp asm("ebp"); 
+    register uint32_t saved_esp asm("esp"); 
+    
     prog_pcb->ebp = saved_ebp;
+    prog_pcb->esp = saved_esp;
 
     /* Set fd array */
 
@@ -210,28 +213,26 @@ int32_t execute(const uint8_t* command){
     prog_pcb->fd_array[1].flags = FD_BUSY; 
 
     /* Modify TSS */
+    tss.ss0 = KERNEL_DS;
     tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+
 
     /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
     asm volatile ("                 \n\
-            pushl    %0             \n\
-            pushl    %1             \n\
+            pushl    %%eax          \n\
+            pushl    %%ebx          \n\
             pushfl                  \n\
-            pushl    %2             \n\
-            pushl    %3             \n\
+            popl     %%eax          \n\
+            orl      $0x200,%%eax   \n\
+            pushl    %%eax          \n\
+            pushl    %%ecx          \n\
+            pushl    %%edx          \n\
+            iret                    \n\
             "
             :
-            : "r" (USER_DS), "r" (PROGRAM_STACK_VIRTUAL - 4), "r" (USER_CS), "r" (prog_entry) 
+            : "a" (USER_DS), "b" (PROGRAM_STACK_VIRTUAL - 4), "c" (USER_CS), "d" (prog_entry) 
             : "memory"
     );
-
-    // This is for re-enabling IF (which is turned off once reaching interrupt gate)
-    // popl     %%eax          \n\
-    //         orl      $0x200,%%eax   \n\
-    //         pushl    %%eax          \n\
-
-    /* IRET */
-    asm volatile ("iret");
 
     /* return */
     return 0;
@@ -243,55 +244,8 @@ pcb_t* get_current_pcb(void){
 }
 
 int32_t halt (uint8_t status){
-    
-    pcb_t* cur_pcb_ptr = get_cur_pcb();
-
-    if(cur_pcb_ptr->pid == 0){
-
-        uint32_t esp_arg = cur_pcb_ptr->ebp; //esp 
-        uint32_t eip_arg = cur_pcb_ptr->eip; //eip
-
-        asm volatile ("             \n\
-            andl    $0x00FF, %%ebx  \n\
-            movw    %%bx, %%ds      \n\
-            pushl   %%ebx           \n\
-            pushl   %%edx           \n\
-            pushfl                  \n\
-            popl    %%edx           \n\
-            orl     $0x0200, %%edx  \n\
-            pushl   %%edx           \n\
-            pushl   %%ecx           \n\
-            pushl   %%eax           \n\
-            iret                    \n\
-            "
-            :
-            : "a"(eip_arg), "b"(USER_DS), "c"(USER_CS), "d"(esp_arg)
-            : "memory"
-        );
-    }
-
-    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id);
-    cur_pcb_ptr = cur_pcb_ptr->parent_id;
-    curr_pid = parent_pcb_ptr->parent_id;
-    cur_pcb_ptr->pid = 0; //resetting pid 
-    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
-    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
-    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
-    flush_tlb();
-
-
-    int32_t i;
-    // close all file descriptors
-    for(i=0; i< FD_ARRAY_SIZE; i++){
-        cur_pcb_ptr->fd_array[i].flags = 0;
-    }
-
-    tss.ss0 = KERNEL_DS;
-    tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
-
-    halt_function(cur_pcb_ptr->ebp,cur_pcb_ptr->ebp, status); // assuming esp and ebp are the same
-
-    return -1;
+    pcb_t* cur_pcb_ptr = get_current_pcb();
+    return 0;
 }
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
@@ -304,9 +258,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     /* fd must be BUSY to read */
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
-
-    return 0;
+    return curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){

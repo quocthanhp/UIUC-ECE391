@@ -56,6 +56,7 @@ typedef struct pcb {
     uint32_t parent_id;
     uint32_t ebp;
     uint32_t eip;
+    uint32_t esp;
     file_descriptor_t fd_array[FD_ARRAY_SIZE];
 } pcb_t;
 
