@@ -6,12 +6,12 @@
 #include "./devices/RTC.h"
  // #include "./devices/RTC.c"
  #include "handler.h"
+#include "syscall.h"
 
 
 void dividebyzero(){
     printf("EXCEPTION: DIVIDE BY ZERO\n");
     halt(256);
-    
 }
 
 void Debug(){
@@ -92,7 +92,6 @@ void GeneralProtectionFault(){
 void PageFault(){
     printf("EXCEPTION: Page Fault\n");
     halt(256);
-    
 }
     
 void reserved(){

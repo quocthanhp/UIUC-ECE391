@@ -8,7 +8,7 @@
 
 uint32_t curr_pid = -1;
 extern void flush_tlb();
-extern void halt_function( uint32_t parent_ebp, uint32_t parent_esp, uint8_t status);
+extern void halt_function( uint32_t parent_ebp, uint32_t parent_esp, int32_t status);
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -169,6 +169,8 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
+    
+
     /* TODO: CHECK FOR PARTIAL FUNCTIONALITY PROGRAM (FISH, CAT, GREP, SIGTEST) --> EXIT GRACEFULLY */
 
     /* Parse command to get file name of program */
@@ -200,6 +202,13 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
+    /* Save current ebp */
+    register uint32_t saved_ebp asm("ebp"); 
+    register uint32_t saved_esp asm("esp"); 
+
+    prog_pcb->ebp = saved_ebp;
+    prog_pcb->esp = saved_esp;
+
     if (pid == 0) {
         prog_pcb->parent_id = 0; 
     } else {
@@ -208,13 +217,6 @@ int32_t execute(const uint8_t* command){
 
     prog_pcb->pid = pid;
     prog_pcb->eip = prog_entry;
-
-    /* Save current ebp */
-    register uint32_t saved_ebp asm("ebp"); 
-    register uint32_t saved_esp asm("esp"); 
-    
-    prog_pcb->ebp = saved_ebp;
-    prog_pcb->esp = saved_esp;
 
     /* Set fd array */
 
@@ -261,21 +263,17 @@ pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
-
-
-
-
 int32_t halt (uint8_t status){
     
-    pcb_t* cur_pcb_ptr = get_cur_pcb();
+    pcb_t* cur_pcb_ptr = get_current_pcb();
 
     if(cur_pcb_ptr->pid == 0){
- //do nothing 
+       //do nothing 
+       execute((const uint8_t *)"shell");
     }
 
     pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); 
 
-    
 
     int32_t i;
     // close all file descriptors
@@ -289,15 +287,18 @@ int32_t halt (uint8_t status){
     cur_pcb_ptr = parent_pcb_ptr; //might not be required
     curr_pid = parent_pcb_ptr->parent_id;
 
-    uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
+    // uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
 
-    uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    // uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
     
-    page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
-    flush_tlb();
+    // page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
+    // flush_tlb();
 
-    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->esp, status); // assuming esp and ebp are the same
+    set_program_page(curr_pid);
 
+
+    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->ebp, (int32_t) status); // assuming esp and ebp are the same
+    
     return 0;
 }
 
@@ -331,22 +332,22 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
-        dentry_t* dentry;
+        dentry_t dentry;
         // check the fd (if its invalid) 
         if(filename == NULL){return -1;}
         // return value on invalid defined in document
-        if(read_dentry_by_name(filename, dentry) == -1){return -1;}
+        if(read_dentry_by_name(filename, &dentry) == -1){return -1;}
         // if valid, check fd for which operation needs to be called
         int i;
         /* first two are std in/out */
         /* find first free fd slot */
         for(i = 2; i < FD_ARRAY_SIZE; i++){
             if(curr_pcb->fd_array[i].flags == FD_FREE){
-                curr_pcb->fd_array[i].inode = dentry->inode_num;
+                curr_pcb->fd_array[i].inode = dentry.inode_num;
                 curr_pcb->fd_array[i].file_position = 0;
                 curr_pcb->fd_array[i].flags = FD_BUSY;
                 // (rtc , or general file)
-                switch (dentry->file_type)
+                switch (dentry.file_type)
                 {
                 case 0:
                     /* code */
@@ -374,18 +375,23 @@ int32_t open (const uint8_t* filename){
                 default:
                     break;
                 }
-                return 0;
+                break;
             }
         }
-        return -1;
+        return i;
         // check what kind of file has been called by checking their respective flags 
         // (executable blah blah blah)
 }
 
 int32_t close (int32_t fd){
     if(fd > 8 || fd < 0) return -1;
+
+
+
+
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
+
     /* fd is already closed return fail */
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 

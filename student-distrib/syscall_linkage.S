@@ -5,7 +5,7 @@
     MIN_SYS_NUM = 1
     MAX_SYS_NUM = 6
 
-.GLOBAL     syscall_handler
+.GLOBAL     syscall_handler, halt_function
 
 syscall_handler:
 
@@ -60,15 +60,12 @@ systemcall_jmptable:
     .long   close
 
 halt_function:
-
     pushl %ebp
     movl %esp, %ebp
 
     movl 16(%ebp), %eax         
-
     movl 12(%ebp), %esp   
-
-    movl 8(%ebp), %ebp
+    movl 12(%ebp), %ebp
 
     leave
     ret

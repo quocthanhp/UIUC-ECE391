@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "lib.h"
+#include "syscall.h"
 
 /* Files sys data */
 uint32_t dir_read_pos = 0;
@@ -154,14 +155,20 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
  * Return Value: 0 for successful read
  * Function: Fill in the buffer by file name */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes) {
-    if (dir_read_pos >= boot_block_start->num_dir_entries) {
+    pcb_t *curr_pcb = get_current_pcb();
+    int8_t buffer[MAX_FILE_NAME + 1];
+
+    if (curr_pcb->fd_array[fd].file_position > boot_block_start->num_dir_entries - 1) {
         return 0;
     }
 
-    if (read_dentry_by_index(dir_read_pos, &test_dentry) == 0) {
+    if (read_dentry_by_index(curr_pcb->fd_array[fd].file_position, &test_dentry) == 0) {
         strncpy(buf, test_dentry.file_name, MAX_FILE_NAME);
-        dir_read_pos++;
-        return 0;
+        strncpy(buffer, test_dentry.file_name, MAX_FILE_NAME);
+
+        curr_pcb->fd_array[fd].file_position++;
+
+        return strlen(buffer);
     } else {
         return -1;
     }
