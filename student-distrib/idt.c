@@ -11,128 +11,128 @@
 
 void dividebyzero(){
     printf("EXCEPTION: DIVIDE BY ZERO\n");
-    halt(256);
+    halt(255);
 }
 
 void Debug(){
     printf("EXCEPTION: Debug\n");
-    halt(256);
+    halt(255);
     
 }
 
 void Nonmaskableinterrupt(){
     printf("EXCEPTION: non-maskable interrupt\n");
-    halt(256);
+    halt(255);
     
 }
 void Breakpoint(){
     printf("EXCEPETION: BREAKPOINT interrupt\n");
-    halt(256);
+    halt(255);
     
 }
 
 void Overflow(){
     printf("EXCEPTION: OVERFLOW interrupt\n");
-    halt(256);
+    halt(255);
     
 }
 void BoundRangeExceeded(){
     printf("EXCEPTION: Bound Range Exceeded\n");
-    halt(256);
+    halt(255);
     
 }
 void InvalidOpcode(){
     printf("EXCEPTION: Invalid Opcode\n");
-    halt(256);
+    halt(255);
     
 }
 
 void devicenotavailable(){
     printf("EXCEPTION: device not available\n");
-    halt(256);
+    halt(255);
     
 }
 	
 void DoubleFault(){
     printf("EXCEPTION: Double Fault\n");
-    halt(256);
+    halt(255);
     
 }
 
 /* never called */    
 void CoprocessorSegmentOverrun(){
     printf("EXCEPTION: Coprocessor_Segment_Overrun\n");
-    halt(256);
+    halt(255);
     
 }
 void InvalidTaskStateSegment(){
     printf("EXCEPTION: Invalid Task State Segment\n");
-    halt(256);
+    halt(255);
     
 }
 
 void Segmentnotpresent(){
     printf("EXCEPTION: Segment not present\n");
-    halt(256);
+    halt(255);
     
 }
 
 void StackSegmentFault(){
     printf("EXCEPTION: Stack Segment Fault\n");
-    halt(256);
+    halt(255);
     
 }
     
 void GeneralProtectionFault(){
     printf("EXCEPTION: General Protection Fault\n");
-    halt(256);
+    halt(255);
     
 }
 
 void PageFault(){
     printf("EXCEPTION: Page Fault\n");
-    halt(256);
+    halt(255);
 }
     
 void reserved(){
     printf("EXCEPTION: reserved\n");
-    halt(256);
+    halt(255);
     
 }
     
 void x87FloatingPointException(){
     printf("EXCEPTION:x87 Floating Point Exception\n");
-    halt(256);
+    halt(255);
     
 }
     
 void AlignmentCheck(){
     printf("EXCEPTION:Alignment Check\n");
-    halt(256);
+    halt(255);
     
 }
     
 void MachineCheck(){
     printf("Machine Check\n");
-    halt(256);
+    halt(255);
     
 }
     
 void SIMDFloatingPointException(){
     printf("EXCEPTION: SIMD Floating-Point Exception\n");
-    halt(256);
+    halt(255);
     
 }
     
 void VirtualizationException(){
     printf("EXCEPTION: Virtualization Exception\n");
-    halt(256);
+    halt(255);
     
 }
 
 void ControlProtectionException(){
     printf("EXCEPTION: Control Protection Exception\n");
-    halt(256);
+    halt(255);
     
 }
 

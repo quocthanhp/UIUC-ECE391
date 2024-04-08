@@ -11,9 +11,6 @@ syscall_handler:
 
     # save all regs 
     pushfl
-    pushl   %ebx
-    pushl   %ecx
-    pushl   %edx
     pushl   %ebp
     pushl   %edi
     pushl   %esi
@@ -31,21 +28,20 @@ syscall_handler:
     ja      bad
 
     call *systemcall_jmptable(, %eax, 4)
-
-    addl     $12, %esp     
+    
     jmp     done
 
 bad:
     movl    $-1, %eax
 
 done:
+    popl    %ebx
+    popl    %ecx
+    popl    %edx
     popl    %esp
     popl    %esi
     popl    %edi 
     popl    %ebp
-    popl    %edx
-    popl    %ecx
-    popl    %ebx
     popfl
   
     iret 

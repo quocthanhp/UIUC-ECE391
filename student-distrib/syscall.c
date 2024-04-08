@@ -5,7 +5,6 @@
 #include "terminal.h"
 #include "devices/RTC.h"
 
-
 uint32_t curr_pid = -1;
 extern void flush_tlb();
 extern void halt_function( uint32_t parent_ebp, uint32_t parent_esp, int32_t status);
@@ -264,6 +263,13 @@ pcb_t* get_current_pcb(void){
 }
 
 int32_t halt (uint8_t status){
+    int32_t ret_val = 0;
+
+    if (status == 255) {
+        ret_val = 256;
+    } else {
+        ret_val = (uint32_t) status;
+    }
     
     pcb_t* cur_pcb_ptr = get_current_pcb();
 
@@ -272,32 +278,23 @@ int32_t halt (uint8_t status){
        execute((const uint8_t *)"shell");
     }
 
-    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); 
-
-
     int32_t i;
-    // close all file descriptors
+    /* Close all file descriptors */ 
     for(i=0; i< FD_ARRAY_SIZE; i++){
         cur_pcb_ptr->fd_array[i].flags = 0;
     }
 
+    /* Restore parent process */
+    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); 
+
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
 
-    cur_pcb_ptr = parent_pcb_ptr; //might not be required
     curr_pid = parent_pcb_ptr->parent_id;
-
-    // uint32_t phys_addr = PROGRAM_PHYSICAL + (curr_pid * PROGRAM_SPACE);
-
-    // uint32_t program_index = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
-    
-    // page_directory[program_index].pde_MB.pageBaseAddr = phys_addr/PAGE_SIZE_4KB; 
-    // flush_tlb();
 
     set_program_page(curr_pid);
 
-
-    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->ebp, (int32_t) status); // assuming esp and ebp are the same
+    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->ebp, ret_val); // assuming esp and ebp are the same
     
     return 0;
 }
@@ -385,9 +382,6 @@ int32_t open (const uint8_t* filename){
 
 int32_t close (int32_t fd){
     if(fd > 8 || fd < 0) return -1;
-
-
-
 
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
