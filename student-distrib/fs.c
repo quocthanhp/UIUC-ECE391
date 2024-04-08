@@ -212,7 +212,19 @@ int32_t dir_close(int32_t fd) {
  * Function: Fill in the buffer by file data */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
     //read_data(fd, offset, buf, nbytes); 
-    return 0;
+    if(buf == NULL)return -1;
+    if(nbytes < 0)return -1;
+    pcb_t* curr_pcb = get_current_pcb();
+
+    int32_t file_pos = read_data(curr_pcb->fd_array[fd].inode, curr_pcb->fd_array[fd].file_position, buf, nbytes);
+
+    if(file_pos < 0) return -1;
+    /* A “file position” member that keeps track of where the user is currently reading from in the file. 
+    * Every read system call should update this member.
+    */ 
+    curr_pcb->fd_array[fd].file_position += file_pos;
+
+    return file_pos;
 }
 
 /* file_write(int32_t fd, void* buf, int32_t nbytes);
