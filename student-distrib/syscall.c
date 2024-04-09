@@ -257,7 +257,9 @@ int32_t execute(const uint8_t* command){
     return 0;
 }
 
-/* helper */
+/* helper 
+* get current pcb (void)
+*/
 pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
@@ -298,6 +300,12 @@ int32_t halt (uint8_t status){
     
     return 0;
 }
+/* read(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: 0 for successful read
+ * Function: Fill in the buffer by file data */
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
@@ -311,6 +319,13 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
 
     return curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
 }
+
+/* file_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Write n bytes from buffer to file */
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
@@ -326,6 +341,10 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     return 0;
 }
+/* open(const uint8_t* filename);
+ * Inputs: filename = file name
+ * Return Value: fd on success, -1 on failure
+ * Function: Open a file */
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
@@ -338,7 +357,7 @@ int32_t open (const uint8_t* filename){
         int i;
         /* first two are std in/out */
         /* find first free fd slot */
-        for(i = 2; i < FD_ARRAY_SIZE; i++){
+        for(i = 2; i < 7; i++){
             if(curr_pcb->fd_array[i].flags == FD_FREE){
                 curr_pcb->fd_array[i].inode = dentry.inode_num;
                 curr_pcb->fd_array[i].file_position = 0;
@@ -376,12 +395,16 @@ int32_t open (const uint8_t* filename){
             }
         }
         return i;
-        // check what kind of file has been called by checking their respective flags 
-        // (executable blah blah blah)
+
 }
 
+/* close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 on success, -1 on fail
+ * Function: Close a file */
+
 int32_t close (int32_t fd){
-    if(fd > 8 || fd < 0) return -1;
+    if(fd > 7 || fd < 2) return -1;
 
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
@@ -392,5 +415,6 @@ int32_t close (int32_t fd){
     curr_pcb->fd_array[fd].flags = FD_FREE;
     return 0;
 }
+
 
 
