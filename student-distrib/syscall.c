@@ -183,6 +183,8 @@ int32_t execute(const uint8_t* command){
     /* Parse command to get file name of program */
     parse(command);
 
+       
+
     /* Check file validity */
     if (!is_valid_file(buffer)) {
         sti();
@@ -191,9 +193,13 @@ int32_t execute(const uint8_t* command){
 
     /* Get new pid */
     uint32_t pid;
-    if ((pid = get_next_pid()) == -1) {
-        sti();
-        return -1;
+    if(strncmp((const int8_t * )command , (const int8_t *) "shell", 5) == 0 && curr_pid == 0){
+        pid = 0;
+    } else {
+        if ((pid = get_next_pid()) == -1) {
+            sti();
+            return -1;
+        }
     }
 
     /* Set up paging */
