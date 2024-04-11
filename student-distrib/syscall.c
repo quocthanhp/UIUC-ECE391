@@ -54,23 +54,6 @@ void set_program_page(uint32_t pid) {
     flush_tlb();
 }
 
-/* reset_program_page(uint32_t pid);
- * Inputs: uint32_t pid = process id
- * Return Value: None
- * Function: Set up paging for program */
-void reset_program_page(uint32_t pid) {
-    uint32_t pde_id = PROGRAM_PHYSICAL - ((pid+1) * KERNEL_STACK_SIZE);
-    
-    page_directory[pde_id].pde_MB.isPresent = 0; 
-    // page_directory[pde_id].pde_MB.isPageSize = 0; /* 4MB page */  
-    // page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
-    // page_directory[pde_id].pde_MB.isUserSupervisor = 0; /* user-level */ 
-    // page_directory[pde_id].pde_MB.isReadWrite = 0;
-    // page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
-
-    flush_tlb();
-}
-
 /* uint32_t load_program_image(const uint8_t *program_name);
  * Inputs: uint8_t *program_name = name of program to load
  * Return Value: entry point into program on success, -1 on failure
@@ -159,11 +142,39 @@ void parse(const uint8_t* command) {
     }
 }
 
+/* int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Invalid read for terminal stdout */
 int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes) {
     return -1;
 }
 
+/* invalid_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to write
+ * Return Value: -1 
+ * Function: Invalid read for terminal stdin */
 int32_t invalid_write (int32_t fd, const void* buf, int32_t nbytes) {
+    return -1;
+}
+
+/* invalid_open(const uint8_t* filename);
+ * Inputs: filename = file name
+ * Return Value: -1
+ * Function: Invalid open for terminal  */
+int32_t invalid_open (const uint8_t* filename) {
+    return -1;
+}
+
+/* invalid_close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 on success, -1 on fail
+ * Function: Invalid close for terminal */
+int32_t invalid_close (int32_t fd) {
     return -1;
 }
 
@@ -182,8 +193,6 @@ int32_t execute(const uint8_t* command){
 
     /* Parse command to get file name of program */
     parse(command);
-
-       
 
     /* Check file validity */
     if (!is_valid_file(buffer)) {
@@ -229,18 +238,19 @@ int32_t execute(const uint8_t* command){
     prog_pcb->eip = prog_entry;
 
     /* Set fd array */
-
-    // How to set other read/write/open/close ?
-
     // First entry is for stdin (terminal read)
     prog_pcb->fd_array[0].file_operations.read = terminal_read;
     prog_pcb->fd_array[0].file_operations.write = invalid_write;
+    prog_pcb->fd_array[0].file_operations.close = invalid_close;
+    prog_pcb->fd_array[0].file_operations.open = invalid_open;
     prog_pcb->fd_array[0].inode = 0; 
     prog_pcb->fd_array[0].flags = FD_BUSY; 
 
     // Second entry is for stdout (terminal write)
     prog_pcb->fd_array[1].file_operations.write = terminal_write;
     prog_pcb->fd_array[1].file_operations.read = invalid_read;
+    prog_pcb->fd_array[1].file_operations.close = invalid_close;
+    prog_pcb->fd_array[1].file_operations.open = invalid_open;
     prog_pcb->fd_array[1].inode = 0;
     prog_pcb->fd_array[1].flags = FD_BUSY; 
 
@@ -280,15 +290,20 @@ int32_t execute(const uint8_t* command){
 }
 
 
-
-
-/* helper 
+/* 
 * get current pcb (void)
+ * Inputs: None
+ * Return Value: pointer to current pcb
+ * Function: Return pointer to the current control block
 */
 pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
+/* int32_t halt (uint8_t status);
+ * Inputs: uint8_t status = current status 
+ * Return Value: according status
+ * Function: Halt the called process */
 int32_t halt (uint8_t status){
     //cli();
     ret_val = 0;
@@ -343,13 +358,13 @@ int32_t halt (uint8_t status){
     );
     return 0;  
 }
+
 /* read(int32_t fd, void* buf, int32_t nbytes);
  * Inputs: uint32_t fd = file descriptor
            void* buf = buffer to hold read data
            uint32_t nbytes = number of bytes to read
  * Return Value: 0 for successful read
  * Function: Fill in the buffer by file data */
-
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -365,10 +380,9 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
 /* file_write(int32_t fd, void* buf, int32_t nbytes);
  * Inputs: uint32_t fd = file descriptor
            void* buf = buffer to hold written data
-           uint32_t nbytes = number of bytes to read
- * Return Value: -1 
+           uint32_t nbytes = number of bytes to write
+ * Return Value: bytes write 
  * Function: Write n bytes from buffer to file */
-
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -383,11 +397,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     //return 0;
 }
+
 /* open(const uint8_t* filename);
  * Inputs: filename = file name
  * Return Value: fd on success, -1 on failure
  * Function: Open a file */
-
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
         dentry_t dentry;
@@ -446,7 +460,6 @@ int32_t open (const uint8_t* filename){
  * Inputs: fd = file descriptor
  * Return Value: 0 on success, -1 on fail
  * Function: Close a file */
-
 int32_t close (int32_t fd){
     if(fd > 8 || fd < 2) return -1;
 
@@ -459,6 +472,3 @@ int32_t close (int32_t fd){
     curr_pcb->fd_array[fd].flags = FD_FREE;
     return 0;
 }
-
-
-
