@@ -189,6 +189,7 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes) {
  * Return Value: 0 on success, -1 on failure
  * Function: Open a directory */
 int32_t dir_open(const uint8_t* dirname) {
+
     if (read_dentry_by_name(dirname, &test_dentry) == 0) {
         return 0;
     } 

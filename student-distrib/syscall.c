@@ -159,6 +159,14 @@ void parse(const uint8_t* command) {
     }
 }
 
+int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes) {
+    return -1;
+}
+
+int32_t invalid_write (int32_t fd, const void* buf, int32_t nbytes) {
+    return -1;
+}
+
 /* int32_t execute(const uint8_t* command);
  * Inputs: const uint8_t* command = command to execute
  * Return Value: 0 on success, -1 on failure
@@ -223,11 +231,13 @@ int32_t execute(const uint8_t* command){
 
     // First entry is for stdin (terminal read)
     prog_pcb->fd_array[0].file_operations.read = terminal_read;
+    prog_pcb->fd_array[0].file_operations.write = invalid_write;
     prog_pcb->fd_array[0].inode = 0; 
     prog_pcb->fd_array[0].flags = FD_BUSY; 
 
     // Second entry is for stdout (terminal write)
     prog_pcb->fd_array[1].file_operations.write = terminal_write;
+    prog_pcb->fd_array[1].file_operations.read = invalid_read;
     prog_pcb->fd_array[1].inode = 0;
     prog_pcb->fd_array[1].flags = FD_BUSY; 
 
@@ -256,6 +266,9 @@ int32_t execute(const uint8_t* command){
     /* return */
     return 0;
 }
+
+
+
 
 /* helper 
 * get current pcb (void)
@@ -337,9 +350,9 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     /* fd must be BUSY to write */
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
+    return curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
 
-    return 0;
+    //return 0;
 }
 /* open(const uint8_t* filename);
  * Inputs: filename = file name
@@ -351,13 +364,14 @@ int32_t open (const uint8_t* filename){
         dentry_t dentry;
         // check the fd (if its invalid) 
         if(filename == NULL){return -1;}
+       
         // return value on invalid defined in document
         if(read_dentry_by_name(filename, &dentry) == -1){return -1;}
         // if valid, check fd for which operation needs to be called
         int i;
         /* first two are std in/out */
         /* find first free fd slot */
-        for(i = 2; i < 7; i++){
+        for(i = 2; i < FD_ARRAY_SIZE; i++){
             if(curr_pcb->fd_array[i].flags == FD_FREE){
                 curr_pcb->fd_array[i].inode = dentry.inode_num;
                 curr_pcb->fd_array[i].file_position = 0;
@@ -394,6 +408,7 @@ int32_t open (const uint8_t* filename){
                 break;
             }
         }
+        if(i == FD_ARRAY_SIZE) return -1;
         return i;
 
 }
@@ -404,7 +419,7 @@ int32_t open (const uint8_t* filename){
  * Function: Close a file */
 
 int32_t close (int32_t fd){
-    if(fd > 7 || fd < 2) return -1;
+    if(fd > 8 || fd < 2) return -1;
 
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
