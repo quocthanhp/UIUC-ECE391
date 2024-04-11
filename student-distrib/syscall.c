@@ -159,6 +159,14 @@ void parse(const uint8_t* command) {
     }
 }
 
+int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes) {
+    return -1;
+}
+
+int32_t invalid_write (int32_t fd, const void* buf, int32_t nbytes) {
+    return -1;
+}
+
 /* int32_t execute(const uint8_t* command);
  * Inputs: const uint8_t* command = command to execute
  * Return Value: 0 on success, -1 on failure
@@ -220,11 +228,13 @@ int32_t execute(const uint8_t* command){
 
     // First entry is for stdin (terminal read)
     prog_pcb->fd_array[0].file_operations.read = terminal_read;
+    prog_pcb->fd_array[0].file_operations.write = invalid_write;
     prog_pcb->fd_array[0].inode = 0; 
     prog_pcb->fd_array[0].flags = FD_BUSY; 
 
     // Second entry is for stdout (terminal write)
     prog_pcb->fd_array[1].file_operations.write = terminal_write;
+    prog_pcb->fd_array[1].file_operations.read = invalid_read;
     prog_pcb->fd_array[1].inode = 0;
     prog_pcb->fd_array[1].flags = FD_BUSY; 
 
@@ -263,7 +273,12 @@ int32_t execute(const uint8_t* command){
     return ret_val;
 }
 
-/* helper */
+
+
+
+/* helper 
+* get current pcb (void)
+*/
 pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
@@ -349,6 +364,12 @@ int32_t halt (uint8_t status){
 
     return 0;  
 }
+/* read(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: 0 for successful read
+ * Function: Fill in the buffer by file data */
 
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
@@ -362,6 +383,13 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     return curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
 }
 
+/* file_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Write n bytes from buffer to file */
+
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -372,16 +400,21 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     /* fd must be BUSY to write */
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
-    curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
+    return curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
 
-    return 0;
+    //return 0;
 }
+/* open(const uint8_t* filename);
+ * Inputs: filename = file name
+ * Return Value: fd on success, -1 on failure
+ * Function: Open a file */
 
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
         dentry_t dentry;
         // check the fd (if its invalid) 
         if(filename == NULL){return -1;}
+       
         // return value on invalid defined in document
         if(read_dentry_by_name(filename, &dentry) == -1){return -1;}
         // if valid, check fd for which operation needs to be called
@@ -425,13 +458,18 @@ int32_t open (const uint8_t* filename){
                 break;
             }
         }
+        if(i == FD_ARRAY_SIZE) return -1;
         return i;
-        // check what kind of file has been called by checking their respective flags 
-        // (executable blah blah blah)
+
 }
 
+/* close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 on success, -1 on fail
+ * Function: Close a file */
+
 int32_t close (int32_t fd){
-    if(fd > 8 || fd < 0) return -1;
+    if(fd > 8 || fd < 2) return -1;
 
     pcb_t* curr_pcb; 
     curr_pcb = get_current_pcb();
@@ -442,5 +480,6 @@ int32_t close (int32_t fd){
     curr_pcb->fd_array[fd].flags = FD_FREE;
     return 0;
 }
+
 
 
