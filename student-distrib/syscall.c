@@ -335,33 +335,6 @@ int32_t halt (uint8_t status){
             : "r" (ret_val), "r" (cur_pcb_ptr->ebp), "r" (cur_pcb_ptr->esp)
             : "memory"
     );
-
-    // asm volatile ("                \n\
-    //         movl     %0,%%ebp       \n\
-    //         "
-    //         :
-    //         : "r" (cur_pcb_ptr->ebp)
-    //         : "memory"
-    // );
-
-    //  asm volatile ("                \n\
-    //         movl     %0,%%esp       \n\
-    //         "
-    //         :
-    //         : "r" (cur_pcb_ptr->esp)
-    //         : "memory"
-    // ); 
-
-    // asm volatile ("                 \n\
-    //         movl     %0,%%eax       \n\
-    //         leave                   \n\
-    //         ret                     \n\
-    //         "
-    //         :
-    //         : "r" (ret_val)
-    //         : "memory"
-    // ); 
-
     return 0;  
 }
 /* read(int32_t fd, void* buf, int32_t nbytes);
