@@ -28,3 +28,9 @@ BUG7:
 
 BUG8:
     use buffer ptr in parse func causes page fault -> use static
+
+BUG9:
+    tear down stack wrongly
+
+BUG10:
+    page shifting is incorrect
