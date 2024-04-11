@@ -10,11 +10,9 @@
 syscall_handler:
 
     # save all regs 
-    pushfl
     pushl   %ebp
     pushl   %edi
     pushl   %esi
-    pushl   %esp
     
     # Push arguments to handler
     pushl   %edx
@@ -35,15 +33,15 @@ bad:
     movl    $-1, %eax
 
 done:
+    
     popl    %ebx
     popl    %ecx
     popl    %edx
-    popl    %esp
+    
     popl    %esi
     popl    %edi 
     popl    %ebp
-    popfl
-  
+
     iret 
 
 systemcall_jmptable:
@@ -55,13 +53,3 @@ systemcall_jmptable:
     .long   open
     .long   close
 
-halt_function:
-    pushl %ebp
-    movl %esp, %ebp
-
-    movl 16(%ebp), %eax         
-    movl 12(%ebp), %esp   
-    movl 12(%ebp), %ebp
-
-    leave
-    ret
