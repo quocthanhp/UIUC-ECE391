@@ -6,6 +6,9 @@
 
 terminal terminal_;
 
+void reset_terminal_pos(){
+    terminal_.position = -1;
+}
 /*
  * terminal clear 
  * clears the terminal's screen and sets x and y vectors to point to the top left of the screen
@@ -15,11 +18,12 @@ terminal terminal_;
  * SIDE EFFECTS: clears 
  */
 
-void clear_terminal(terminal terminal_){
+void clear_terminal(terminal term){
 
     //set the contents of video memory to be blank
     //clear() defined within lib.h
     clear();
+    terminal_.position = -1;
 
     //reset the cursor to the top left position. 
     // terminal_.screen_x = 0;
@@ -37,11 +41,10 @@ void clear_terminal(terminal terminal_){
 int terminal_open(const uint8_t * filename){
     
     int i;
-    terminal terminal_;
 
     enable_cursor();
 
-    terminal_.position = 0; // initializing the "actual" buffer size as 0 
+    terminal_.position = -1; // initializing the "actual" buffer size as 0 
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
             terminal_.terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
         }
@@ -113,7 +116,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
         terminal_.terminal_buffer[j] = '\0';
     }
 
-    terminal_.position = 0; 
+    terminal_.position = -1; 
     // for(j = 0; j < range; j++){
 
     //     if((j + range) < KEYBOARD_BUFFER_SIZE){
@@ -187,22 +190,21 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
     }
     else if(terminal_.position == (KEYBOARD_BUFFER_SIZE -2 )){
 
-        terminal_.terminal_buffer[terminal_.position] = character;
-        terminal_.position = (terminal_.position) + 1; 
+        terminal_.position = (terminal_.position) + 1;
+        terminal_.terminal_buffer[terminal_.position] = character;  
         terminal_.terminal_buffer[KEYBOARD_BUFFER_SIZE-1] = '\n';
 
     }
     else if( (terminal_.position < (KEYBOARD_BUFFER_SIZE -1)) ){
-
+        terminal_.position = (terminal_.position) + 1;         
         terminal_.terminal_buffer[terminal_.position] = character;
-        terminal_.position = (terminal_.position) + 1; 
     }
    // what should 
     
  }
 
  void terminal_remove_from_buffer(){
-    if(terminal_.position > 0){
+    if(terminal_.position >= 0){
         int delete_pos = terminal_.position;
         terminal_.terminal_buffer[delete_pos] = '\0';
         terminal_.position = terminal_.position - 1;
@@ -223,8 +225,22 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         terminal_.terminal_buffer[i] = '\0';
     }
 
-    terminal_.position = 0;
+    terminal_.position = -1;
 
     return 0;
 
  }
+
+/*
+ * get_terminal_position
+ * returns the terminal position
+ * INPUTS: none
+ * OUTPUTS: terminal_.position
+ * SIDE EFFECTS: returns the terminal buffer position
+ */
+int get_terminal_position(void){
+
+    return(terminal_.position);
+
+}
+

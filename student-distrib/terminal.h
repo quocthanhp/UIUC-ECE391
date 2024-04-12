@@ -25,5 +25,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes);
 int terminal_write(int32_t fd, const void * buf, int32_t nbytes);
 void terminal_update_buffer(unsigned char character);
 void terminal_remove_from_buffer();
+int get_terminal_position();
+void reset_terminal_pos();
 
 #endif /* _TERMINAL_H */
