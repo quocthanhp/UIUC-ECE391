@@ -5,9 +5,9 @@
 #include "terminal.h"
 #include "devices/RTC.h"
 
-uint32_t curr_pid = -1;
+static uint32_t curr_pid = -1;
 extern void flush_tlb();
-extern void halt_function( uint32_t parent_ebp, uint32_t parent_esp, int32_t status);
+static int32_t ret_val;
 
 /* uint32_t get_next_pid();
  * Inputs: None
@@ -49,24 +49,7 @@ void set_program_page(uint32_t pid) {
     page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
     page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
     page_directory[pde_id].pde_MB.isReadWrite = 1;
-    page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
-
-    flush_tlb();
-}
-
-/* reset_program_page(uint32_t pid);
- * Inputs: uint32_t pid = process id
- * Return Value: None
- * Function: Set up paging for program */
-void reset_program_page(uint32_t pid) {
-    uint32_t pde_id = PROGRAM_PHYSICAL - ((pid+1) * KERNEL_STACK_SIZE);
-    
-    page_directory[pde_id].pde_MB.isPresent = 0; 
-    // page_directory[pde_id].pde_MB.isPageSize = 0; /* 4MB page */  
-    // page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
-    // page_directory[pde_id].pde_MB.isUserSupervisor = 0; /* user-level */ 
-    // page_directory[pde_id].pde_MB.isReadWrite = 0;
-    // page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET;
+    page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
 
     flush_tlb();
 }
@@ -140,8 +123,8 @@ void parse(const uint8_t* command) {
         return;
     }
     int inWord = 0;
-
     memset(buffer, 0, 128);
+
     int i = 0;
     int j = 0;
     while (command[i] != '\0') {
@@ -159,11 +142,39 @@ void parse(const uint8_t* command) {
     }
 }
 
+/* int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold read data
+           uint32_t nbytes = number of bytes to read
+ * Return Value: -1 
+ * Function: Invalid read for terminal stdout */
 int32_t invalid_read (int32_t fd, void* buf, int32_t nbytes) {
     return -1;
 }
 
+/* invalid_write(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: uint32_t fd = file descriptor
+           void* buf = buffer to hold written data
+           uint32_t nbytes = number of bytes to write
+ * Return Value: -1 
+ * Function: Invalid read for terminal stdin */
 int32_t invalid_write (int32_t fd, const void* buf, int32_t nbytes) {
+    return -1;
+}
+
+/* invalid_open(const uint8_t* filename);
+ * Inputs: filename = file name
+ * Return Value: -1
+ * Function: Invalid open for terminal  */
+int32_t invalid_open (const uint8_t* filename) {
+    return -1;
+}
+
+/* invalid_close(int32_t fd);
+ * Inputs: fd = file descriptor
+ * Return Value: 0 on success, -1 on fail
+ * Function: Invalid close for terminal */
+int32_t invalid_close (int32_t fd) {
     return -1;
 }
 
@@ -172,11 +183,11 @@ int32_t invalid_write (int32_t fd, const void* buf, int32_t nbytes) {
  * Return Value: 0 on success, -1 on failure
  * Function: Load and execute a new program */
 int32_t execute(const uint8_t* command){
+    cli();
     if (command == NULL) {
+        sti();
         return -1;
     }
-
-    
 
     /* TODO: CHECK FOR PARTIAL FUNCTIONALITY PROGRAM (FISH, CAT, GREP, SIGTEST) --> EXIT GRACEFULLY */
 
@@ -185,13 +196,19 @@ int32_t execute(const uint8_t* command){
 
     /* Check file validity */
     if (!is_valid_file(buffer)) {
+        sti();
         return -1;
     }
 
     /* Get new pid */
     uint32_t pid;
-    if ((pid = get_next_pid()) == -1) {
-        return -1;
+    if(strncmp((const int8_t * )command , (const int8_t *) "shell", 5) == 0 && curr_pid == 0){
+        pid = 0;
+    } else {
+        if ((pid = get_next_pid()) == -1) {
+            sti();
+            return -1;
+        }
     }
 
     /* Set up paging */
@@ -200,21 +217,16 @@ int32_t execute(const uint8_t* command){
     /* Load file into memory */
     uint32_t prog_entry;
     if ((prog_entry = load_program_image(buffer)) == -1) {
+        sti();
         return -1;
     }
 
     /* Create PCB */
     pcb_t *prog_pcb;
     if ((prog_pcb = get_pcb(pid)) == NULL) {
+        sti();
         return -1;
     }
-
-    /* Save current ebp */
-    register uint32_t saved_ebp asm("ebp"); 
-    register uint32_t saved_esp asm("esp"); 
-
-    prog_pcb->ebp = saved_ebp;
-    prog_pcb->esp = saved_esp;
 
     if (pid == 0) {
         prog_pcb->parent_id = 0; 
@@ -226,25 +238,34 @@ int32_t execute(const uint8_t* command){
     prog_pcb->eip = prog_entry;
 
     /* Set fd array */
-
-    // How to set other read/write/open/close ?
-
     // First entry is for stdin (terminal read)
     prog_pcb->fd_array[0].file_operations.read = terminal_read;
     prog_pcb->fd_array[0].file_operations.write = invalid_write;
+    prog_pcb->fd_array[0].file_operations.close = invalid_close;
+    prog_pcb->fd_array[0].file_operations.open = invalid_open;
     prog_pcb->fd_array[0].inode = 0; 
     prog_pcb->fd_array[0].flags = FD_BUSY; 
 
     // Second entry is for stdout (terminal write)
     prog_pcb->fd_array[1].file_operations.write = terminal_write;
     prog_pcb->fd_array[1].file_operations.read = invalid_read;
+    prog_pcb->fd_array[1].file_operations.close = invalid_close;
+    prog_pcb->fd_array[1].file_operations.open = invalid_open;
     prog_pcb->fd_array[1].inode = 0;
     prog_pcb->fd_array[1].flags = FD_BUSY; 
+
+    /* Save current ebp */
+    register uint32_t saved_ebp asm("ebp"); 
+    prog_pcb->ebp = saved_ebp;
+
+    register uint32_t saved_esp asm("esp"); 
+    prog_pcb->esp = saved_esp;
 
     /* Modify TSS */
     tss.ss0 = KERNEL_DS;
     tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
-
+    
+    sti();
 
     /* Push IRET context to kernel stack (SS, ESP, EFLAGS, CS, EIP) */
     asm volatile ("                 \n\
@@ -256,29 +277,36 @@ int32_t execute(const uint8_t* command){
             pushl    %%eax          \n\
             pushl    %%ecx          \n\
             pushl    %%edx          \n\
-            iret                    \n\
             "
             :
             : "a" (USER_DS), "b" (PROGRAM_STACK_VIRTUAL - 4), "c" (USER_CS), "d" (prog_entry) 
             : "memory"
     );
 
+    asm volatile ("iret");
+
     /* return */
-    return 0;
+    return ret_val;
 }
 
 
-
-
-/* helper 
+/* 
 * get current pcb (void)
+ * Inputs: None
+ * Return Value: pointer to current pcb
+ * Function: Return pointer to the current control block
 */
 pcb_t* get_current_pcb(void){
     return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
 }
 
+/* int32_t halt (uint8_t status);
+ * Inputs: uint8_t status = current status 
+ * Return Value: according status
+ * Function: Halt the called process */
 int32_t halt (uint8_t status){
-    int32_t ret_val = 0;
+    //cli();
+    ret_val = 0;
 
     if (status == 255) {
         ret_val = 256;
@@ -288,38 +316,55 @@ int32_t halt (uint8_t status){
     
     pcb_t* cur_pcb_ptr = get_current_pcb();
 
-    if(cur_pcb_ptr->pid == 0){
-       //do nothing 
-       execute((const uint8_t *)"shell");
-    }
-
     int32_t i;
     /* Close all file descriptors */ 
     for(i=0; i< FD_ARRAY_SIZE; i++){
         cur_pcb_ptr->fd_array[i].flags = 0;
     }
 
+    if(cur_pcb_ptr->pid == 0){
+       //do nothing 
+       curr_pid = -1; /* THIS NEEDS TO BE FIXED FOR FUTURE CP */
+       execute((const uint8_t *)"shell");
+       return ret_val;
+    }
+
     /* Restore parent process */
-    pcb_t* parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id); 
+    pcb_t* parent_pcb_ptr;
+    if ((parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id)) == NULL) {
+        // sti();
+        return -1;
+    } 
 
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = KERNAL_STACK - (KERNEL_STACK_SIZE * parent_pcb_ptr->pid) - sizeof(int32_t);
+    tss.esp0 = KERNAL_STACK - (parent_pcb_ptr->pid * KERNEL_STACK_SIZE) - sizeof(int32_t);
 
-    curr_pid = parent_pcb_ptr->parent_id;
+    curr_pid = parent_pcb_ptr->pid;
 
     set_program_page(curr_pid);
 
-    halt_function(parent_pcb_ptr->ebp, parent_pcb_ptr->ebp, ret_val); // assuming esp and ebp are the same
-    
-    return 0;
+    //sti();
+
+    asm volatile ("                 \n\
+            movl     %0,%%eax       \n\
+            movl     %1,%%ebp       \n\
+            movl     %2,%%esp       \n\
+            leave                   \n\
+            ret                     \n\
+            "
+            :
+            : "r" (ret_val), "r" (cur_pcb_ptr->ebp), "r" (cur_pcb_ptr->esp)
+            : "memory"
+    );
+    return 0;  
 }
+
 /* read(int32_t fd, void* buf, int32_t nbytes);
  * Inputs: uint32_t fd = file descriptor
            void* buf = buffer to hold read data
            uint32_t nbytes = number of bytes to read
  * Return Value: 0 for successful read
  * Function: Fill in the buffer by file data */
-
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -329,17 +374,15 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     curr_pcb = get_current_pcb();
     /* fd must be BUSY to read */
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
-
     return curr_pcb->fd_array[fd].file_operations.read(fd,buf,nbytes);
 }
 
 /* file_write(int32_t fd, void* buf, int32_t nbytes);
  * Inputs: uint32_t fd = file descriptor
            void* buf = buffer to hold written data
-           uint32_t nbytes = number of bytes to read
- * Return Value: -1 
+           uint32_t nbytes = number of bytes to write
+ * Return Value: bytes write 
  * Function: Write n bytes from buffer to file */
-
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(fd > 8 || fd < 0) return -1;
     if(buf == NULL)return -1;
@@ -354,11 +397,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     //return 0;
 }
+
 /* open(const uint8_t* filename);
  * Inputs: filename = file name
  * Return Value: fd on success, -1 on failure
  * Function: Open a file */
-
 int32_t open (const uint8_t* filename){
         pcb_t* curr_pcb = get_current_pcb();
         dentry_t dentry;
@@ -417,7 +460,6 @@ int32_t open (const uint8_t* filename){
  * Inputs: fd = file descriptor
  * Return Value: 0 on success, -1 on fail
  * Function: Close a file */
-
 int32_t close (int32_t fd){
     if(fd > 8 || fd < 2) return -1;
 
@@ -435,7 +477,4 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){return 0;}
 int32_t vidmap (uint8_t** screen_start){return 0;}
 int32_t set_handler (int32_t signum, void* handler_address){return -1;}
 int32_t sigreturn (void){return -1;}
-
-
-
 

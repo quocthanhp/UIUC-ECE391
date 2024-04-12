@@ -170,9 +170,11 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes) {
 
         return strlen(buffer);
     } else {
-        return -1;
+        return 0;
     }
 }
+
+
 
 /* dir_write(int32_t fd, void* buf, int32_t nbytes);
  * Inputs: uint32_t fd = file descriptor

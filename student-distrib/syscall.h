@@ -23,7 +23,7 @@
 
 /* Paging offset */
 #define PAGE_DIR_OFFSET   22
-#define PAGE_FRAME_OFFSET 12
+#define PAGE_FRAME_OFFSET 22
 
 /* Bytes for magic number in executable */
 #define MAGIC_0 0x7F

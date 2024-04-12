@@ -99,7 +99,8 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
     if(2 > fd  || nbytes != 4 || fd > 1024)  return -1;  // if fd is out of bunds or it is not 4 bytes return fail.
     // freq = fd;
     // temp = 1024/freq;
-    rtc_freq(fd);
+
+    rtc_freq(*((int32_t *) buf));
     return nbytes;
 }
 
