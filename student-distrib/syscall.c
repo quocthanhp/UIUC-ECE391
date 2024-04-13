@@ -117,26 +117,40 @@ int8_t is_valid_file(const uint8_t *file_name) {
  * Inputs: const uint8_t* command = command to parse
  * Return Value: program file name
  * Function: Extract the program file name */
-uint8_t buffer[128];
+uint8_t args_buf[MAX_INPUT];
+uint8_t name_buf[MAX_INPUT];
 void parse(const uint8_t* command) {
     if (command == NULL) {
         return;
     }
     int inWord = 0;
-    memset(buffer, 0, 128);
+    int name_found = 0;
+    memset(args_buf, 0, 128);
+    memset(name_buf, 0, 128);
 
     int i = 0;
     int j = 0;
+    int k = 0;
     while (command[i] != '\0') {
         if (command[i] == ' ' && inWord) {
             inWord = 0;
-            //buffer[j] = '\0'; // null-terminate word
-            break;
+
+            if (!name_found) {
+                name_found = 1;
+                name_buf[j] = '\0';
+            } else {
+                args_buf[j] = '\0'; // null-terminate word
+            }
         }
         else if (command[i] != ' ') {
-            buffer[j] = command[i];
+            if (!name_found) {
+                name_buf[j] = command[i];
+                j++;
+            } else {
+                args_buf[k] = command[i];
+                k++;
+            }
             inWord = 1;
-            j++;
         }
         i++;
     }
@@ -195,7 +209,7 @@ int32_t execute(const uint8_t* command){
     parse(command);
 
     /* Check file validity */
-    if (!is_valid_file(buffer)) {
+    if (!is_valid_file(name_buf)) {
         sti();
         return -1;
     }
@@ -216,7 +230,7 @@ int32_t execute(const uint8_t* command){
 
     /* Load file into memory */
     uint32_t prog_entry;
-    if ((prog_entry = load_program_image(buffer)) == -1) {
+    if ((prog_entry = load_program_image(name_buf)) == -1) {
         sti();
         return -1;
     }
@@ -236,6 +250,9 @@ int32_t execute(const uint8_t* command){
 
     prog_pcb->pid = pid;
     prog_pcb->eip = prog_entry;
+
+    /* Save args */
+    memcpy(prog_pcb->args, args_buf, MAX_INPUT);
 
     /* Set fd array */
     // First entry is for stdin (terminal read)
@@ -472,3 +489,26 @@ int32_t close (int32_t fd){
     curr_pcb->fd_array[fd].flags = FD_FREE;
     return 0;
 }
+
+
+int32_t getargs (uint8_t* buf, int32_t nbytes) {
+    pcb_t *curr_pcb = get_current_pcb();
+    memset(buf, 0, nbytes);
+    memcpy(buf, curr_pcb->args, nbytes);
+
+    return 0;
+}
+
+int32_t vidmap(uint8_t** screen_start) {
+    return 0;
+}
+
+int32_t set_handler (int32_t signum, void* handler_address) {
+    return -1;
+}
+
+int32_t sigreturn(void) {
+    return -1;
+}
+
+

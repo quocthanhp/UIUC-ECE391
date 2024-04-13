@@ -34,3 +34,6 @@ BUG9:
 
 BUG10:
     page shifting is incorrect
+
+BUG11:
+    not stop file read correctly so cat just keep reading and printing empty space
