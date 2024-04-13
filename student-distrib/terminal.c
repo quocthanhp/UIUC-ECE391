@@ -186,6 +186,7 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
  void terminal_update_buffer(unsigned char character) {
 
     if( character == '\n'){
+        terminal_.position = terminal_.position + 1;
         terminal_.terminal_buffer[terminal_.position] = '\n';
     }
     else if(terminal_.position == (KEYBOARD_BUFFER_SIZE -2 )){
