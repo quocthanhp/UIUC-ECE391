@@ -35,6 +35,8 @@
 #define FD_FREE 0
 #define FD_BUSY 1
 
+#define MAX_INPUT 128
+
 typedef struct file_operations {
     int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
     int32_t (*write) (int32_t fd, const void* buf, int32_t nbytes);
@@ -58,6 +60,7 @@ typedef struct pcb {
     uint32_t eip;
     uint32_t esp;
     file_descriptor_t fd_array[FD_ARRAY_SIZE];
+    uint8_t args[MAX_INPUT];
 } pcb_t;
 
 int32_t halt (uint8_t status);
@@ -66,6 +69,10 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes);
 int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
+int32_t getargs (uint8_t* buf, int32_t nbytes);
+int32_t vidmap(uint8_t** screen_start);
+int32_t set_handler (int32_t signum, void* handler_address);
+int32_t sigreturn(void);
 
 pcb_t* get_current_pcb(void);
 

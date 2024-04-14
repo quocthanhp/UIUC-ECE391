@@ -218,6 +218,11 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes) {
     if(buf == NULL)return -1;
     if(nbytes < 0)return -1;
     pcb_t* curr_pcb = get_current_pcb();
+    inode_t *n = (inode_t *) inode_start + curr_pcb->fd_array[fd].inode;
+
+    if (curr_pcb->fd_array[fd].file_position >= n->len) {
+        return 0;
+    }
 
     int32_t file_pos = read_data(curr_pcb->fd_array[fd].inode, curr_pcb->fd_array[fd].file_position, buf, nbytes);
 

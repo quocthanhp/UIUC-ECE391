@@ -3,7 +3,7 @@
 
 .data
     MIN_SYS_NUM = 1
-    MAX_SYS_NUM = 6
+    MAX_SYS_NUM = 10
 
 .GLOBAL     syscall_handler, halt_function
 
@@ -52,4 +52,8 @@ systemcall_jmptable:
     .long   write
     .long   open
     .long   close
+    .long   getargs
+    .long   vidmap
+    .long   set_handler
+    .long   sigreturn
 
