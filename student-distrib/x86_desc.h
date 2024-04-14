@@ -288,6 +288,7 @@ typedef union PageTableEntry4KB {
 // Variables for Page Directory and Page Table, aligned on 4kB boundaries
 pde_t page_directory[NUM_PDE] __attribute__((aligned (PAGE_SIZE_4KB)));
 PageTableEntry4KB page_table[NUM_PTE] __attribute__((aligned (PAGE_SIZE_4KB)));
+PageTableEntry4KB vidmap_page_table[NUM_PTE] __attribute__((aligned (PAGE_SIZE_4KB)));
 
 #endif /* ASM */
 

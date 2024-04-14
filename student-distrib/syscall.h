@@ -37,6 +37,8 @@
 
 #define MAX_INPUT 128
 
+#define VIDEO_MEM_START     PROGRAM_IMAGE_VIRTUAL + 
+
 typedef struct file_operations {
     int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
     int32_t (*write) (int32_t fd, const void* buf, int32_t nbytes);
@@ -61,6 +63,7 @@ typedef struct pcb {
     uint32_t esp;
     file_descriptor_t fd_array[FD_ARRAY_SIZE];
     uint8_t args[MAX_INPUT];
+    uint32_t program_image_size; 
 } pcb_t;
 
 int32_t halt (uint8_t status);

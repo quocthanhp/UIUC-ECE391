@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 #include "devices/RTC.h"
+#include "nPage.h"
 
 static uint32_t curr_pid = -1;
 extern void flush_tlb();
@@ -101,6 +102,9 @@ int32_t load_program_image(const uint8_t *program_name) {
     if (prog_entry_size != read_data(inode, 24, (uint8_t *) &prog_entry, prog_entry_size)) {
         return -1;
     }
+
+    pcb_t * current_pcb = get_current_pcb();
+    current_pcb->program_image_size = prog_size;
 
     return prog_entry;
 }
@@ -516,7 +520,37 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
 }
 
 int32_t vidmap(uint8_t** screen_start) {
+
+    if(screen_start == NULL || (uint32_t) screen_start == 0x400000) {
+        return -1;
+    } 
+
+
+    // uint8_t * temp = *screen_start;
+    // uint8_t * temp2 = *temp;
+    pcb_t* current_pcb = get_current_pcb();
+
+    *screen_start = PROGRAM_IMAGE_VIRTUAL + KERNEL_STACK_SIZE + current_pcb->program_image_size;
+    uint32_t pdid = ((uint32_t) screen_start >> 22);
+    uint32_t pteid = ((uint32_t) screen_start >> 12);
+
+    // if(val == NULL) return -1;
+    /* check for with bounds */
+    //if( val < PROGRAM_VIRTUAL || val > (PROGRAM_VIRTUAL + PROGRAM_SPACE)) return -1;
+
+    page_directory[35].pde_KB.isPageSize = 0; 
+    page_directory[35].pde_KB.isPresent = 1;
+    page_directory[35].pde_KB.isReadWrite = 1;
+    page_directory[35].pde_KB.pageTableBaseAddr = 0;
+
+    
+    vidmap_page_table[0].pageBaseAddr = (VIDEO_MEMORY_INDEX >> 12);
+    vidmap_page_table[0].isPresent = 1;
+    vidmap_page_table[0].isReadWrite = 1;
+
+
     return 0;
+
 }
 
 int32_t set_handler (int32_t signum, void* handler_address) {
