@@ -14,6 +14,7 @@ int control_flag;
 int l_flag;
 int enter_flag;
 
+
 unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '\0' , '\0' , '\0' , '\0' , ' '};
 
 unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' , '\0' , '\0' , '\0' , '\0' , ' '};
@@ -41,6 +42,7 @@ void keyboard_init(void){
     backspace_flag = 0;
     l_flag = 0;
     enter_flag = 0;
+    reset_terminal_pos();
     enable_irq(1);
 }
 
@@ -95,7 +97,6 @@ void keyboard_interrupt(void){
             break;
         case BACKSPACE_PRESSED:
             backspace_flag = 1;
-            terminal_remove_from_buffer();
             break;
         case BACKSPACE_RELEASED:
             backspace_flag = 0;
@@ -131,7 +132,13 @@ void keyboard_interrupt(void){
     if (scan_code < MAX_SCAN_CODES && scan_code > 0) {
 
         if(scan_code == BACKSPACE_PRESSED){
-            putc(lowercase_characters[scan_code]);
+            int pos;
+            pos = get_terminal_position();
+            if( pos >= 0){
+                terminal_remove_from_buffer();
+                putc(BACKSPACE_PRESSED);
+            }
+            
         }
         else if(caps_lock_flag == 0) {
             //shift pressed while caps lock is off
