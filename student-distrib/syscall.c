@@ -506,11 +506,25 @@ int32_t close (int32_t fd){
     return 0;
 }
 
-
+/* int32_t getargs (uint8_t* buf, int32_t nbytes);
+ * Inputs: buf = buffer to store args
+ *         nbytes = number of bytes to copy
+ * Return Value: 0 on success, -1 on fail
+ * Function: Get the args provided by current process */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
+    if (buf == NULL | nbytes < 0) {
+        return -1;
+    }
+
     pcb_t *curr_pcb = get_current_pcb();
     memset(buf, 0, nbytes);
-    memcpy(buf, curr_pcb->args, nbytes);
+
+    if (nbytes > MAX_INPUT) {
+        memcpy(buf, curr_pcb->args, MAX_INPUT);
+    } else {
+        memcpy(buf, curr_pcb->args, nbytes);
+    }
+    
 
     return 0;
 }
