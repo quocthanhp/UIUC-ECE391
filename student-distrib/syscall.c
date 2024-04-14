@@ -41,10 +41,30 @@ pcb_t *get_pcb(uint32_t pid) {
  * Return Value: None
  * Function: Set up paging for program */
 void set_program_page(uint32_t pid) {
-    uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+    uint32_t pde_id = (PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET) + pid;
     // uint32_t pde_id = PROGRAM_PHYSICAL - (  KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
     
     page_directory[pde_id].pde_MB.isPresent = 1; 
+    page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
+    page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
+    page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
+    page_directory[pde_id].pde_MB.isReadWrite = 1;
+    page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + (pid * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
+
+    flush_tlb();
+}
+
+/* reset_program_page(uint32_t pid);
+ * Inputs: uint32_t pid = process id
+ * Return Value: None
+ * Function: resets paging for program (deallocating paging set) */
+void reset_program_page(uint32_t pid) {
+    uint32_t pde_id = (PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET) + pid;
+    // uint32_t pde_id = PROGRAM_PHYSICAL - (  KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
+    
+    page_directory[pde_id].pde_MB.isPresent = 0; 
+
+    //rest doesn't really matter if page is marked not present
     page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
     page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
     page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
@@ -202,13 +222,19 @@ int32_t execute(const uint8_t* command){
 
     /* Get new pid */
     uint32_t pid;
-    if(strncmp((const int8_t * )command , (const int8_t *) "shell", 5) == 0 && curr_pid == 0){
+    /*if(strncmp((const int8_t * )command , (const int8_t *) "shell", 5) == 0 && curr_pid == 0){
         pid = 0;
-    } else {
+        } else {
         if ((pid = get_next_pid()) == -1) {
             sti();
             return -1;
         }
+    } */
+
+    pid = get_next_pid();
+    if(pid == -1){
+        sti();
+        return -1;
     }
 
     /* Set up paging */
@@ -329,6 +355,9 @@ int32_t halt (uint8_t status){
        return ret_val;
     }
 
+    /* Reset paging allocated for that process*/
+
+    reset_program_page(curr_pid);
     /* Restore parent process */
     pcb_t* parent_pcb_ptr;
     if ((parent_pcb_ptr = get_pcb(cur_pcb_ptr->parent_id)) == NULL) {
@@ -341,7 +370,7 @@ int32_t halt (uint8_t status){
 
     curr_pid = parent_pcb_ptr->pid;
 
-    set_program_page(curr_pid);
+    //set_program_page(curr_pid);
 
     //sti();
 

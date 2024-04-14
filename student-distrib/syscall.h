@@ -4,7 +4,7 @@
 #include "types.h"
 
 #define FD_ARRAY_SIZE   8
-#define MAX_PROCESSES   2
+#define MAX_PROCESSES   3
 
 /* Virtual address of user-level program */
 #define PROGRAM_VIRTUAL       0x8000000  // 128MB
