@@ -37,6 +37,8 @@
 
 #define MAX_INPUT 128
 
+#define VIDMAP_MEMORY_INDEX     (PROGRAM_VIRTUAL + PROGRAM_SPACE)  //set vidmap to always be mapped at virtual memory index (128 MB) + max program size (4 MB)
+
 typedef struct file_operations {
     int32_t (*read) (int32_t fd, void* buf, int32_t nbytes);
     int32_t (*write) (int32_t fd, const void* buf, int32_t nbytes);
