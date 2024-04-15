@@ -543,9 +543,6 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
  */
 int32_t vidmap(uint8_t** screen_start) {
 
-    // if(screen_start == NULL || (uint32_t) screen_start == KERNEL_BASE_ADDRESS) {
-    //     return -1;
-    // } 
 
     if((uint32_t) screen_start < PROGRAM_VIRTUAL || (uint32_t) screen_start > VIDMAP_MEMORY_INDEX){
         return -1;
