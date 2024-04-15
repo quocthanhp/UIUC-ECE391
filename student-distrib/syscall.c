@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "terminal.h"
 #include "devices/RTC.h"
+#include "nPage.h"
 
 static uint32_t curr_pid = -1;
 extern void flush_tlb();
@@ -57,18 +58,21 @@ void set_program_page(uint32_t pid) {
 /* reset_program_page(uint32_t pid);
  * Inputs: uint32_t pid = process id
  * Return Value: None
- * Function: Set up paging for program */
+ * Function: Resets paging set up initially for program */
 void reset_program_page(uint32_t pid) {
-    // uint32_t pde_id = PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET;
+
+    /*programs always set to run in the same virtual address
+      only thing we need to do is reset the physical address
+      */
     uint32_t pde_id = (PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET);
-    // uint32_t pde_id = PROGRAM_PHYSICAL - (  KERNEL_STACK_SIZE); // absolute address goes incrementingly, need to start from different point
-    
-    // page_directory[pde_id].pde_MB.isPresent = 1; 
-    // page_directory[pde_id].pde_MB.isPageSize = 1; /* 4MB page */  
-    // page_directory[pde_id].pde_MB.isGlobal = 0; /* page is a per-process page and the translations will be cleared when CR3 is reloaded*/ 
-    // page_directory[pde_id].pde_MB.isUserSupervisor = 1; /* user-level */ 
-    // page_directory[pde_id].pde_MB.isReadWrite = 1;
+  
     page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + ((pid -1) * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
+
+    //de allocating pages set during vidmap
+    uint32_t pdid = (VIDMAP_MEMORY_INDEX >> PAGE_DIR_OFFSET);
+    uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
+    page_directory[pdid].pde_KB.isPresent = 0;
+    page_table[pteid].isPresent = 0;
 
     flush_tlb();
 }
@@ -355,9 +359,9 @@ int32_t halt (uint8_t status){
         cur_pcb_ptr->fd_array[i].flags = 0;
     }
 
-    if(cur_pcb_ptr->pid == 0){
-       //do nothing 
-       curr_pid = -1; /* THIS NEEDS TO BE FIXED FOR FUTURE CP */
+    /*prevent exiting from the base shell*/
+    if(cur_pcb_ptr->pid == 0){ 
+       curr_pid = -1;
        execute((const uint8_t *)"shell");
        return ret_val;
     }
@@ -369,7 +373,7 @@ int32_t halt (uint8_t status){
         return -1;
     } 
 
-    reset_program_page(curr_pid);
+    reset_program_page(curr_pid);  //de allocate paging set up
 
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (parent_pcb_ptr->pid * KERNEL_STACK_SIZE) - sizeof(int32_t);
@@ -512,7 +516,7 @@ int32_t close (int32_t fd){
  * Return Value: 0 on success, -1 on fail
  * Function: Get the args provided by current process */
 int32_t getargs (uint8_t* buf, int32_t nbytes) {
-    if (buf == NULL | nbytes < 0) {
+    if ((buf == NULL) | (nbytes < 0)) {
         return -1;
     }
 
@@ -529,8 +533,43 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
     return 0;
 }
 
+/* int32_t vidmap(uint8_t** screen_start);
+ * DESCRIPTION: assuming a valid start location for vidmap memory is passed to this syscall,
+ * sets up paging at a set location outside user space (128 + 4 MB)
+ * which points to video memory initialized at the beginning (within 0-4MB)
+ * INPUTS: **screen_start: start of vidmap memory
+ * OUTPUTS: -1 on fail. start of vidmap memory if valid index passed to the function
+ * SIDE EFFECTS: none
+ */
 int32_t vidmap(uint8_t** screen_start) {
-    return 0;
+
+    // if(screen_start == NULL || (uint32_t) screen_start == KERNEL_BASE_ADDRESS) {
+    //     return -1;
+    // } 
+
+    if((uint32_t) screen_start < PROGRAM_VIRTUAL || (uint32_t) screen_start > VIDMAP_MEMORY_INDEX){
+        return -1;
+    }
+
+    *screen_start = VIDMAP_MEMORY_INDEX; //setting the screen_start pointer to point to start of vidmap memory
+    uint32_t pdeid = (VIDMAP_MEMORY_INDEX >> PAGE_DIRECTORY_INDEX_OFFSET);
+    uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);  
+
+    page_directory[pdeid].pde_KB.isPageSize = 0; 
+    page_directory[pdeid].pde_KB.isPresent = 1;
+    page_directory[pdeid].pde_KB.isUserSupervisor = 1;
+    page_directory[pdeid].pde_KB.isReadWrite = 1;
+    page_directory[pdeid].pde_KB.pageTableBaseAddr = ((uint32_t) page_table >> PAGE_TABLE_OFFSET);
+    
+    page_table[pteid].isPresent = 1;
+    page_table[pteid].isReadWrite = 1;
+    page_table[pteid].isUserSupervisor = 1;
+    page_table[pteid].pageBaseAddr = (VIDEO_MEMORY_INDEX >> PAGE_TABLE_OFFSET);
+
+    flush_tlb();
+
+    return ((int32_t) VIDMAP_MEMORY_INDEX);
+
 }
 
 int32_t set_handler (int32_t signum, void* handler_address) {

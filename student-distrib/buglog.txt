@@ -37,3 +37,33 @@ BUG10:
 
 BUG11:
     not stop file read correctly so cat just keep reading and printing empty space
+
+BUG12:
+    trying to execute more than one process kept resulting in a page fault
+    was present since reset paging was trying to reset paging at the wrong virtual address, assumed each program ran at a different virtual address dependent on printed
+    only thing needed to be done is reset the phys address to point to the parent's phys address 
+
+BUG13:
+    vidmap page set up kept resulting in page faults due to incorrect paging set up 
+    occurred due to assumption that vidmap needed to be mapped within user space 
+    fixed by setting it outside user space (128 MB + 4MB)
+
+BUG14:
+    multiple shells couldn't be executed correctly due to setting each shell execution to pid = 0, hence allowing infinite shell executions
+    fixed by ensuring each shell execution gets its own process, which is limited by max total processes
+
+BUG15:
+    keyboard allowed backspacing of terminal prompts due to terminal_.position (pointer to the lastest position of character entered in the buffer) remaining at 0
+    resulting in backspacing always being allowed due to condition in terminal_remove_from_buffer being >=0
+    fixed by modifying logic of terminal_.position and fixing boundary conditions within terminal_remove_from_buffer
+
+BUG16:
+    keyboard allowed printing of more than 128 characters, 
+    fixed by allowing characters to print until 128 characters reached,
+    once 127 characters reached, enter forcibly added to the terminal buffer, resulting in a terminal read, which clears the buffer and allows continued typing
+
+BUG17:
+    backspacing kept printing a space to the terminal buffer when pressed, fixed by adding a special check for backspace which didn't do a putc
+
+BUG18:
+    trying to putc null characters caused it to print incorrect characters. Fixed by only doing putc for non null characters

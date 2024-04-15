@@ -29,7 +29,7 @@ void pageInit()
         {
             page_table[i].isPresent = 1;
             page_table[i].isReadWrite = 1;
-            page_table[i].pageBaseAddr = (VIDEO_MEMORY_INDEX >> 12);
+            page_table[i].pageBaseAddr = (VIDEO_MEMORY_INDEX >> PAGE_TABLE_OFFSET);
         } 
     }
 
@@ -39,12 +39,12 @@ void pageInit()
 
     page_directory[0].pde_KB.isReadWrite = 1;
 
-    page_directory[0].pde_KB.pageTableBaseAddr = (unsigned int) page_table >> 12;
+    page_directory[0].pde_KB.pageTableBaseAddr = (unsigned int) page_table >> PAGE_TABLE_OFFSET;
 
 
     // 4MB-8MB memory as 4mb pages
     page_directory[1].pde_MB.isPageSize = 1;
-    page_directory[1].pde_MB.pageBaseAddr = 0x400000 >> 22;
+    page_directory[1].pde_MB.pageBaseAddr = KERNEL_BASE_ADDRESS >> PAGE_DIRECTORY_INDEX_OFFSET;
     page_directory[1].pde_MB.isPresent = 1;
     page_directory[1].pde_MB.isReadWrite = 1;
     page_directory[1].pde_MB.isGlobal = 0;
