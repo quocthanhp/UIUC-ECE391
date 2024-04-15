@@ -538,7 +538,7 @@ int32_t getargs (uint8_t* buf, int32_t nbytes) {
  * sets up paging at a set location outside user space (128 + 4 MB)
  * which points to video memory initialized at the beginning (within 0-4MB)
  * INPUTS: **screen_start: start of vidmap memory
- * OUTPUTS: -1 on fail. start of vidmap memory if valid index passed to the function
+ * OUTPUTS: -1 on fail. 0 on success
  * SIDE EFFECTS: none
  */
 int32_t vidmap(uint8_t** screen_start) {
@@ -551,7 +551,7 @@ int32_t vidmap(uint8_t** screen_start) {
         return -1;
     }
 
-    *screen_start = VIDMAP_MEMORY_INDEX; //setting the screen_start pointer to point to start of vidmap memory
+    *screen_start = (uint8_t *) VIDMAP_MEMORY_INDEX; //setting the screen_start pointer to point to start of vidmap memory
     uint32_t pdeid = (VIDMAP_MEMORY_INDEX >> PAGE_DIRECTORY_INDEX_OFFSET);
     uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);  
 
@@ -568,14 +568,26 @@ int32_t vidmap(uint8_t** screen_start) {
 
     flush_tlb();
 
-    return ((int32_t) VIDMAP_MEMORY_INDEX);
+    return 0;
 
 }
 
+/* int32_t set_handler(int32_t signum, void* handler_address);
+ * DESCRIPTION: dummy function. Placeholder for the set handler syscall
+ * INPUTS: signum, handler address
+ * OUTPUTS: -1 on fail(always)
+ * SIDE EFFECTS: none
+ */
 int32_t set_handler (int32_t signum, void* handler_address) {
     return -1;
 }
 
+/* int32_t sigreturn(void);
+ * DESCRIPTION: dummy function. Placeholder for the sigreturn syscall
+ * INPUTS: none
+ * OUTPUTS: -1 on fail(always)
+ * SIDE EFFECTS: none
+ */
 int32_t sigreturn(void) {
     return -1;
 }
