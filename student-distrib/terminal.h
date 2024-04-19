@@ -14,6 +14,7 @@ typedef struct terminal{
     int screen_y;
     int position;
     //number of processes runnning
+    char* video_memory;
 
 } terminal_t;
 
@@ -28,5 +29,6 @@ void terminal_remove_from_buffer();
 int get_terminal_position();
 void reset_terminal_pos();
 void switch_terminal(int id);
+void terminal_init();
 
 #endif /* _TERMINAL_H */

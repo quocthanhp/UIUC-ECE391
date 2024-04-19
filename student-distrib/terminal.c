@@ -2,6 +2,12 @@
 #include "lib.h"
 #include "i8259.h"
 #include "devices/keyboard.h"
+#include "nPage.h"
+
+#define VIDEO       0xB8000
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define ATTRIB      0x7
 
 terminal_t terminals[3]; // make array of 3
 int active_terminal = 1;
@@ -250,4 +256,44 @@ int get_terminal_position(void){
 
 void switch_terminal(int id){
     active_terminal = id;
+}
+
+void terminal_init(){
+    int i;
+    int j;
+    int k;
+    for(i = 0; i < 3; i++){
+        
+        terminals[i].screen_x = 0;
+        terminals[i].screen_y = 0;
+        terminals[i].position = 0;
+
+        switch (i)
+        {
+        case 0:
+            terminals[i].video_memory = (char*) TERM1_MEMORY;
+            break;
+
+        case 1:
+            terminals[i].video_memory = (char*) TERM2_MEMORY;
+            break;
+        case 2:
+            terminals[i].video_memory = (char*) TERM3_MEMORY;
+            break;
+
+        default:
+            break;
+        } 
+
+            for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
+
+                terminals[i].terminal_buffer[j] = "\0";
+            }
+
+            for (k = 0; k < NUM_ROWS * NUM_COLS; k++) {
+                *(uint8_t *)(terminals[i].video_memory + (i << 1)) = ' ';
+                *(uint8_t *)(terminals[i].video_memory + (i << 1) + 1) = ATTRIB;
+             }
+
+    }
 }
