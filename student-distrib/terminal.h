@@ -13,9 +13,12 @@ typedef struct terminal{
     // int screen_x;
     // int screen_y;
     int position;
+    //number of processes runnning
+
 } terminal;
 
-
+terminal terminals[3]; // make array of 3
+int active_terminal;
 
 void clear_terminal();
 int terminal_open(const uint8_t * filename);
