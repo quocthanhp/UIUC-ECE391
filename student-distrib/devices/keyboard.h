@@ -19,6 +19,9 @@
 #define RIGHT_SHIFT_PRESSED     0x36
 #define LEFT_ALT_PRESSED        0x38
 #define CAPS_LOCK_PRESSED       0x3A
+#define F1_PRESSED              0x3B
+#define F2_PRESSED              0x3C
+#define F3_PRESSED              0x3D
 // #define RIGHT_CONTROL_PRESSED   0xE0 
 
 #define L_PRESSED               0x26
@@ -28,7 +31,11 @@
 #define LEFT_CONTROL_RELEASED   0x9D
 #define LEFT_SHIFT_RELEASED     0xAA
 #define RIGHT_SHIFT_RELEASED    0xB6
+#define LEFT_ALT_RELEASED       0xB8
 #define ENTER_RELEASED          0x9C
+#define F1_RELEASED             0xBB
+#define F2_RELEASED             0xBC
+#define F3_RELEASED             0xBD
 // #define RIGHT_CONTROL_RELEASED  0xE0
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;

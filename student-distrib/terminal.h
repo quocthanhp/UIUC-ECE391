@@ -10,15 +10,13 @@
 
 typedef struct terminal{
     char terminal_buffer[KEYBOARD_BUFFER_SIZE];
-    // int screen_x;
-    // int screen_y;
+    int screen_x;
+    int screen_y;
     int position;
     //number of processes runnning
 
-} terminal;
+} terminal_t;
 
-terminal terminals[3]; // make array of 3
-int active_terminal;
 
 void clear_terminal();
 int terminal_open(const uint8_t * filename);
@@ -29,5 +27,6 @@ void terminal_update_buffer(unsigned char character);
 void terminal_remove_from_buffer();
 int get_terminal_position();
 void reset_terminal_pos();
+void switch_terminal(int id);
 
 #endif /* _TERMINAL_H */

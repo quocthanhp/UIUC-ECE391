@@ -5,6 +5,8 @@
 // #include "string.h"
 // #include "../lib.c" 
 
+extern terminal_t terminals[3]; // make array of 3
+extern int active_terminal;
 
 int caps_lock_flag; //turned off (0) by default 
 int shift_flag;
@@ -13,9 +15,11 @@ int backspace_flag;
 int control_flag;
 int l_flag;
 int enter_flag;
+int f1_flag;
+int f2_flag;
+int f3_flag;
 
-
-unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '/' , '\0' , '\0' , '\0' , ' '};
+unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '/' , '\0' , '\0' , '\0' , ' ' };
 
 unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' , '?' , '\0' , '\0' , '\0' , ' '};
 
@@ -42,6 +46,9 @@ void keyboard_init(void){
     backspace_flag = 0;
     l_flag = 0;
     enter_flag = 0;
+    f1_flag = 0;
+    f2_flag = 0;
+    f3_flag = 0;
     reset_terminal_pos();
     enable_irq(1);
 }
@@ -90,10 +97,10 @@ void keyboard_interrupt(void){
             break;
         case LEFT_ALT_PRESSED:
             //set alt flag to 1
-            alt_flag = 0;
-        /*case LEFT_ALT_RELEASED:
+            alt_flag = 1;
+        case LEFT_ALT_RELEASED:
             //set alt flag to 0
-            alt_flag = 0; */
+            alt_flag = 0; 
             break;
         case BACKSPACE_PRESSED:
             backspace_flag = 1;
@@ -124,6 +131,24 @@ void keyboard_interrupt(void){
             break;
         case ENTER_RELEASED:
             enter_flag = 0;
+            break;
+        case F1_PRESSED:
+            f1_flag = 1;
+            break;
+        case F2_PRESSED:
+            f2_flag = 1;
+            break;
+        case F3_PRESSED:
+            f3_flag = 1;
+            break;
+        case F1_RELEASED:
+            f1_flag = 0;
+            break;
+        case F2_RELEASED:
+            f2_flag = 0;
+            break;
+        case F3_RELEASED:
+            f3_flag = 0;
             break;
         default:
             break;
@@ -173,6 +198,18 @@ void keyboard_interrupt(void){
         if(control_flag == 1){
             if(scan_code == L_PRESSED){
                 clear_terminal();
+            }
+        }
+
+        if(alt_flag == 1){
+            if(scan_code == F1_PRESSED){
+                switch_terminal(0);
+            }
+            if(scan_code == F2_PRESSED){
+                switch_terminal(1);
+            }
+            if(scan_code == F3_PRESSED){
+                switch_terminal(2);
             }
         }
     }
