@@ -3,11 +3,12 @@
 #include "i8259.h"
 #include "devices/keyboard.h"
 
+terminal_t terminals[3]; // make array of 3
+int active_terminal = 1;
 
-terminal terminal_;
 
 void reset_terminal_pos(){
-    terminal_.position = -1;
+    terminals[active_terminal].position = -1;
 }
 /*
  * terminal clear 
@@ -18,16 +19,16 @@ void reset_terminal_pos(){
  * SIDE EFFECTS: clears 
  */
 
-void clear_terminal(terminal term){
+void clear_terminal(terminal_t term){
 
     //set the contents of video memory to be blank
     //clear() defined within lib.h
     clear();
-    terminal_.position = -1;
+    terminals[active_terminal].position = -1;
+    // terminals[active_terminal].screen_x = 0;
+    // terminals[active_terminal].screen_y = 0;
 
     //reset the cursor to the top left position. 
-    // terminal_.screen_x = 0;
-    // terminal_.screen_y = 0;
 
     /*need to add something to change cursor position to be in the top left */
 }
@@ -44,12 +45,12 @@ int terminal_open(const uint8_t * filename){
 
     enable_cursor();
 
-    terminal_.position = -1; // initializing the "actual" buffer size as 0 
+    terminals[active_terminal].position = -1; // initializing the "actual" buffer size as 0 
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
-            terminal_.terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
+            terminals[active_terminal].terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
         }
-    terminal_.terminal_buffer[128] = '\0';
-    clear_terminal(terminal_);
+    terminals[active_terminal].terminal_buffer[128] = '\0';
+    clear_terminal(terminals[active_terminal]);
     return 0;
 
 }
@@ -73,7 +74,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     int32_t range;
     // int enter_flag = get_enter_flag();
     //check if the last character in the terminal buffer is '\n' (CA suggestion instead of using an enter flag)
-    while ( (terminal_.terminal_buffer[terminal_.position]) != '\n' ){
+    while ( (terminals[active_terminal].terminal_buffer[terminals[active_terminal].position]) != '\n' ){
     /*while (enter_flag == 0) */
     
         //do nothing 
@@ -94,16 +95,16 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
     for (i = 0; i < range; i++){
 
-        if( terminal_.terminal_buffer[i] != '\n'){
+        if( terminals[active_terminal].terminal_buffer[i] != '\n'){
 
-            ((char*) buf)[i] = terminal_.terminal_buffer[i];
+            ((char*) buf)[i] = terminals[active_terminal].terminal_buffer[i];
             // terminal_.terminal_buffer[i] = '\0'; 
             // terminal_.position = terminal_.position - 1;
             bytes_read = bytes_read + 1;
         }
 
         else{
-            terminal_.terminal_buffer[i] = '\0';
+            terminals[active_terminal].terminal_buffer[i] = '\0';
             break;
         }
             
@@ -113,10 +114,10 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     //clearing the buffer entirely once read 
     int j;
     for (j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
-        terminal_.terminal_buffer[j] = '\0';
+        terminals[active_terminal].terminal_buffer[j] = '\0';
     }
 
-    terminal_.position = -1; 
+    terminals[active_terminal].position = -1; 
     // for(j = 0; j < range; j++){
 
     //     if((j + range) < KEYBOARD_BUFFER_SIZE){
@@ -183,32 +184,33 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
  * SIDE EFFECTS: updates the terminal buffer
  */
 
+//change to update the buffer of the current index
  void terminal_update_buffer(unsigned char character) {
 
     if( character == '\n'){
-        terminal_.position = terminal_.position + 1;
-        terminal_.terminal_buffer[terminal_.position] = '\n';
+        terminals[active_terminal].position = terminals[active_terminal].position + 1;
+        terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = '\n';
     }
-    else if(terminal_.position == (KEYBOARD_BUFFER_SIZE -2 )){
+    else if(terminals[active_terminal].position == (KEYBOARD_BUFFER_SIZE -2 )){
 
-        terminal_.position = (terminal_.position) + 1;
-        terminal_.terminal_buffer[terminal_.position] = character;  
-        terminal_.terminal_buffer[KEYBOARD_BUFFER_SIZE-1] = '\n';
+        terminals[active_terminal].position = (terminals[active_terminal].position) + 1;
+        terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = character;  
+        terminals[active_terminal].terminal_buffer[KEYBOARD_BUFFER_SIZE-1] = '\n';
 
     }
-    else if( (terminal_.position < (KEYBOARD_BUFFER_SIZE -1)) ){
-        terminal_.position = (terminal_.position) + 1;         
-        terminal_.terminal_buffer[terminal_.position] = character;
+    else if( (terminals[active_terminal].position < (KEYBOARD_BUFFER_SIZE -1)) ){
+        terminals[active_terminal].position = (terminals[active_terminal].position) + 1;         
+        terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = character;
     }
    // what should 
     
  }
 
  void terminal_remove_from_buffer(){
-    if(terminal_.position >= 0){
-        int delete_pos = terminal_.position;
-        terminal_.terminal_buffer[delete_pos] = '\0';
-        terminal_.position = terminal_.position - 1;
+    if(terminals[active_terminal].position >= 0){
+        int delete_pos = terminals[active_terminal].position;
+        terminals[active_terminal].terminal_buffer[delete_pos] = '\0';
+        terminals[active_terminal].position = terminals[active_terminal].position - 1;
     }
  }
 
@@ -223,10 +225,10 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
     int i;
 
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
-        terminal_.terminal_buffer[i] = '\0';
+        terminals[active_terminal].terminal_buffer[i] = '\0';
     }
 
-    terminal_.position = -1;
+    terminals[active_terminal].position = -1;
 
     return 0;
 
@@ -241,8 +243,11 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
  */
 int get_terminal_position(void){
 
-    return(terminal_.position);
+    return(terminals[active_terminal].position);
 
 }
 
 
+void switch_terminal(int id){
+    active_terminal = id;
+}

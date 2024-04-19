@@ -3,15 +3,18 @@
 
 #include "lib.h"
 #include "devices/keyboard.h"
+#include "terminal.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
+extern terminal_t terminals[3]; // make array of 3
+extern int active_terminal;
 
-static int screen_x;
-static int screen_y;
+// static int screen_x;
+// static int screen_y;
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -24,8 +27,8 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    screen_x = 0;
-    screen_y = 0;
+    terminals[active_terminal].screen_x = 0;
+    terminals[active_terminal].screen_y = 0;
 }
 
 /* Standard printf().
@@ -173,10 +176,12 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
 
+//get active terminal 
+//screen_x will change to terminal[active].screen_x
 if (c == '\0') {
         return;
     }
-   if((screen_x == (NUM_COLS -1) && (screen_y == (NUM_ROWS -1))) ){
+   if((terminals[active_terminal].screen_x == (NUM_COLS -1) && (terminals[active_terminal].screen_y == (NUM_ROWS -1))) ){
 
         int i; 
         int j;
@@ -195,7 +200,7 @@ if (c == '\0') {
                 *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
             }
             
-            screen_x = 0;
+            terminals[active_terminal].screen_x = 0;
 
     }
     if(c == '\n' || c == '\r') {
@@ -203,7 +208,7 @@ if (c == '\0') {
         int j;
         int k;
 
-        if (screen_y == NUM_ROWS -1)
+        if (terminals[active_terminal].screen_y == NUM_ROWS -1)
         { 
             //do vertical scrolling 
             for(j = 0; j < (NUM_ROWS - 1); j++){ // for each row
@@ -219,11 +224,11 @@ if (c == '\0') {
                 *(uint8_t *)(video_mem + ((NUM_COLS * 24 + k) << 1) + 1) = ATTRIB;
             }
             
-            screen_x = 0;
+            terminals[active_terminal].screen_x = 0;
         }
         else{
-            screen_y++;
-            screen_x = 0;
+            terminals[active_terminal].screen_y++;
+            terminals[active_terminal].screen_x = 0;
         }
         
         
@@ -231,26 +236,26 @@ if (c == '\0') {
     else if(c == TAB_PRESSED){
         int i;
         for (i = 0; i < TAB_SPACES; i++) {
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-            screen_x++;
-            screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-            screen_x %= NUM_COLS;
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1)) = ' ';
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1) + 1) = ATTRIB;
+            terminals[active_terminal].screen_x++;
+            terminals[active_terminal].screen_y = (terminals[active_terminal].screen_y + (terminals[active_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
+            terminals[active_terminal].screen_x %= NUM_COLS;
         }
     }
 
     else if (c == BACKSPACE_PRESSED){
-        if(!(screen_x == 0 && screen_y == 0)){
-            screen_x--; 
-            if (screen_x < 0) {
-                screen_y = (screen_y - 1) % NUM_ROWS;
-                screen_x = NUM_COLS - 1;
+        if(!(terminals[active_terminal].screen_x == 0 && terminals[active_terminal].screen_y == 0)){
+            terminals[active_terminal].screen_x--; 
+            if (terminals[active_terminal].screen_x < 0) {
+                terminals[active_terminal].screen_y = (terminals[active_terminal].screen_y - 1) % NUM_ROWS;
+                terminals[active_terminal].screen_x = NUM_COLS - 1;
             } else {
-                screen_y = (screen_y - (screen_x / NUM_COLS)) % NUM_ROWS;
+                terminals[active_terminal].screen_y = (terminals[active_terminal].screen_y - (terminals[active_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
             }
 
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-            *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB; 
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1)) = ' ';
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1) + 1) = ATTRIB; 
         }
 
     }
@@ -258,14 +263,14 @@ if (c == '\0') {
       
     else {
 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-        screen_x %= NUM_COLS;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminals[active_terminal].screen_y + terminals[active_terminal].screen_x) << 1) + 1) = ATTRIB;
+        terminals[active_terminal].screen_x++;
+        terminals[active_terminal].screen_y = (terminals[active_terminal].screen_y + (terminals[active_terminal].screen_x / NUM_COLS)) % NUM_ROWS;
+        terminals[active_terminal].screen_x %= NUM_COLS;
     }
 
-     update_cursor(screen_x, screen_y);
+     update_cursor(terminals[active_terminal].screen_x, terminals[active_terminal].screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
