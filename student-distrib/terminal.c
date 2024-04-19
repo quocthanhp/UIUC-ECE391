@@ -167,9 +167,6 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
     //check the conditions with TAs
     for( i = 0; i < nbytes; i++){
         current_character = ((char *) buf)[i];
-        if (current_character == '\0') {
-            continue;
-        }
         putc(current_character);
        
     }

@@ -173,7 +173,10 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
 
-    if((screen_x == (NUM_COLS -1) && (screen_y == (NUM_ROWS -1))) ){
+if (c == '\0') {
+        return;
+    }
+   if((screen_x == (NUM_COLS -1) && (screen_y == (NUM_ROWS -1))) ){
 
         int i; 
         int j;
