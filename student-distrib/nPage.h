@@ -6,10 +6,9 @@
 
 #define VIDEO_MEMORY_INDEX  0xB8000 // video memory index start
 
-#define TERM1_MEMORY    0xBA000
-#define TERM2_MEMORY    0xBB000
-#define TERM3_MEMORY    0xBC000
-
+#define TERM1_MEMORY    (0xB9000)
+#define TERM2_MEMORY    (0xBA000)
+#define TERM3_MEMORY    (0xBB000)
 #define VIDEO_MEMORY_INDEX_END 0xB9000 //video memory index end
 
 #define KERNEL_BASE_ADDRESS 0x400000
@@ -26,6 +25,8 @@ void pageInit();
 void Term1PageInit();
 void Term2PageInit();
 void Term3PageInit();
+
+void swap_video_memory(int active_terminal_id);
 
 void enable_paging(unsigned int * page_directory);
 #endif

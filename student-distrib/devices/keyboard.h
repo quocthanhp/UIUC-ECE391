@@ -36,6 +36,8 @@
 #define F1_RELEASED             0xBB
 #define F2_RELEASED             0xBC
 #define F3_RELEASED             0xBD
+
+#define C_PRESSED               0x2E
 // #define RIGHT_CONTROL_RELEASED  0xE0
 //uint16_t keycodes[0xD7];
 // uint8_t scan_code;
@@ -45,7 +47,7 @@
 
 
 #define TAB_SPACES      4
-#define MAX_SCAN_CODES  58
+#define MAX_SCAN_CODES  62
 
 /* init functiuon for keybaord */
 void keyboard_init(void);

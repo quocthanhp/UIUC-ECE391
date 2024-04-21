@@ -3,6 +3,7 @@
 #include "i8259.h"
 #include "devices/keyboard.h"
 #include "nPage.h"
+#include "syscall.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -10,8 +11,12 @@
 #define ATTRIB      0x7
 
 terminal_t terminals[3]; // make array of 3
-int active_terminal = 1;
+int active_terminal = 0;
 
+int terminal_2_flag = 0;
+int terminal_3_flag = 0;
+
+char* displayed_video_mem = (char *)VIDEO;
 
 void reset_terminal_pos(){
     terminals[active_terminal].position = -1;
@@ -255,7 +260,34 @@ int get_terminal_position(void){
 
 
 void switch_terminal(int id){
-    active_terminal = id;
+
+    int prev_active_terminal = active_terminal;
+
+    // swap_video_memory(id);
+
+    memcpy((char *)terminals[prev_active_terminal].video_memory , (char * ) VIDEO, 4096); // storing the contents of vid memory into the terminal that WAS being displayed
+
+    memcpy((char * ) VIDEO, (char *)terminals[id].video_memory, 4096); //storing the contents of the new terminal to the displayed video memory 
+
+    active_terminal = id; //changing active terminal 
+
+    update_cursor( terminals[active_terminal].screen_x, terminals[active_terminal].screen_y); //updating displayed cursor position
+
+    if(active_terminal == 1){
+        if (terminal_2_flag == 0){
+            execute((const uint8_t *)"shell");
+            terminal_2_flag = 1;
+        }
+    }
+
+    if(active_terminal == 2){
+        if (terminal_3_flag == 0){
+            execute((const uint8_t *)"shell");
+            terminal_3_flag = 1;
+        }
+    }
+
+    //sav
 }
 
 void terminal_init(){
@@ -266,34 +298,54 @@ void terminal_init(){
         
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
-        terminals[i].position = 0;
+        terminals[i].position = -1;
 
-        switch (i)
-        {
-        case 0:
-            terminals[i].video_memory = (char*) TERM1_MEMORY;
-            break;
 
-        case 1:
-            terminals[i].video_memory = (char*) TERM2_MEMORY;
-            break;
-        case 2:
-            terminals[i].video_memory = (char*) TERM3_MEMORY;
-            break;
+        // switch (i)
+        // {
+        // case 0:
+        //     terminals[i].video_memory =  TERM1_MEMORY;
+            
+        //     break;
 
-        default:
-            break;
-        } 
+        // case 1:
+        //     terminals[i].video_memory =  TERM2_MEMORY;
+        //     Term2PageInit();
+        //     break;
+        // case 2:
+        //     terminals[i].video_memory =  TERM3_MEMORY;
+        //     Term3PageInit();
+        //     break;
 
-            for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
+        // default:
+        //     break;
+        // } 
 
-                terminals[i].terminal_buffer[j] = "\0";
-            }
+        if( i == 0){
+            terminals[i].video_memory = TERM1_MEMORY;
+            Term1PageInit();
+        }
 
-            for (k = 0; k < NUM_ROWS * NUM_COLS; k++) {
-                *(uint8_t *)(terminals[i].video_memory + (i << 1)) = ' ';
-                *(uint8_t *)(terminals[i].video_memory + (i << 1) + 1) = ATTRIB;
-             }
+        else if( i == 1){
+            terminals[i].video_memory = TERM2_MEMORY;
+            Term2PageInit();
+        }
+        
+        else if( i==2){
+            terminals[i].video_memory = TERM3_MEMORY;
+            Term3PageInit();
+        }
+
+        for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
+
+            terminals[i].terminal_buffer[j] = '\0';
+        }
+
+            // for (k = 0; k < NUM_ROWS * NUM_COLS; k++) {
+            //     *(uint8_t *)(terminals[i].video_memory + (i << 1)) = ' ';
+            //     *(uint8_t *)(terminals[i].video_memory + (i << 1) + 1) = ATTRIB;
+            //  }
 
     }
+    
 }

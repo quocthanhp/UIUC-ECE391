@@ -19,9 +19,9 @@ int f1_flag;
 int f2_flag;
 int f3_flag;
 
-unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '/' , '\0' , '\0' , '\0' , ' ' };
+unsigned char lowercase_characters[MAX_SCAN_CODES] = {'\0' , '\0' /*escape*/, '1' , '2' , '3' , '4' , '5' , '6' , '7' , '8' , '9' , '0' , '-' , '=' , BACKSPACE_PRESSED , TAB_PRESSED  , 'q' , 'w' , 'e' , 'r' , 't' , 'y' , 'u' , 'i' , 'o' , 'p' , '[' , ']' , '\n' , '\0' , 'a' , 's' , 'd' , 'f' , 'g' , 'h' , 'j' , 'k' , 'l' , ';' , '\'', '`' , '\0' /*left shift*/, '\\' , 'z' , 'x' , 'c' , 'v' , 'b' , 'n' , 'm' , ',' , '.' , '/' , '\0' , '\0' , '\0' , ' ' , '\0' , F1_PRESSED, F2_PRESSED, F3_PRESSED};
 
-unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' , '?' , '\0' , '\0' , '\0' , ' '};
+unsigned char upppercase_characters[MAX_SCAN_CODES]= {'\0' , '\0' /*escape*/, '!' , '@' , '#' , '$' , '%' , '^' , '&' , '*' , '(' , ')' , '_' , '+' , BACKSPACE_PRESSED , TAB_PRESSED  , 'Q' , 'W' , 'E' , 'R' , 'T' , 'Y' , 'U' , 'I' , 'O' , 'P' , '{' , '}' , '\n' , '\0' , 'A' , 'S' , 'D' , 'F' , 'G' , 'H' , 'J'  , 'K' , 'L' , ':' , '"' , '~' , '\0' /*left shift*/, '|'  , 'Z' , 'X' , 'C' , 'V' , 'B' , 'N' , 'M' , '<' , '>' , '?' , '\0' , '\0' , '\0' , ' ' , '\0' , F1_PRESSED, F2_PRESSED, F3_PRESSED};
 
 /*flags to be used for special cases*/
 // int caps_lock_flag = 0; //turned off (0) by default 
@@ -61,8 +61,8 @@ int nothing = NULL;
 void keyboard_interrupt(void){
 
 /* google says keybaord is usually irq 1*/ 
-    cli();
-
+    // cli();
+    send_eoi(1);
     uint8_t scan_code = get_key();
 
     //case statement 
@@ -98,6 +98,7 @@ void keyboard_interrupt(void){
         case LEFT_ALT_PRESSED:
             //set alt flag to 1
             alt_flag = 1;
+            break;
         case LEFT_ALT_RELEASED:
             //set alt flag to 0
             alt_flag = 0; 
@@ -156,6 +157,32 @@ void keyboard_interrupt(void){
 
     if (scan_code < MAX_SCAN_CODES && scan_code > 0) {
 
+        if(control_flag == 1){
+            if(scan_code == L_PRESSED){
+                clear_terminal();
+            }
+
+            else if(scan_code == C_PRESSED){
+                halt(0);
+            }
+        }
+
+
+        if(alt_flag == 1){
+            if(scan_code == F1_PRESSED){
+                switch_terminal(0);
+                return;
+            }
+            if(scan_code == F2_PRESSED){
+                switch_terminal(1);
+                return;
+            }
+            if(scan_code == F3_PRESSED){
+                switch_terminal(2);
+                return;
+            }
+        }
+
         if(scan_code == BACKSPACE_PRESSED){
             int pos;
             pos = get_terminal_position();
@@ -195,28 +222,12 @@ void keyboard_interrupt(void){
             }
         }
 
-        if(control_flag == 1){
-            if(scan_code == L_PRESSED){
-                clear_terminal();
-            }
-        }
 
-        if(alt_flag == 1){
-            if(scan_code == F1_PRESSED){
-                switch_terminal(0);
-            }
-            if(scan_code == F2_PRESSED){
-                switch_terminal(1);
-            }
-            if(scan_code == F3_PRESSED){
-                switch_terminal(2);
-            }
-        }
     }
      
     /* after each key send eoi */
-    send_eoi(1);
-    sti();
+    
+    // sti();
     //update terminal buffer 
     //print the actual character as well using putc 
 }

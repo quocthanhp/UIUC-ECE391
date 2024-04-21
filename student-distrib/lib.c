@@ -178,7 +178,7 @@ void putc(uint8_t c) {
 
 //get active terminal 
 //screen_x will change to terminal[active].screen_x
-if (c == '\0') {
+    if (c == '\0') {
         return;
     }
    if((terminals[active_terminal].screen_x == (NUM_COLS -1) && (terminals[active_terminal].screen_y == (NUM_ROWS -1))) ){

@@ -14,7 +14,7 @@ typedef struct terminal{
     int screen_y;
     int position;
     //number of processes runnning
-    char* video_memory;
+    uint32_t video_memory;
 
 } terminal_t;
 
