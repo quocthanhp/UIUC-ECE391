@@ -75,17 +75,15 @@ void keyboard_interrupt(void){
             caps_lock_flag = caps_lock_flag == 0 ? 1 : 0;
             break;
         case LEFT_SHIFT_PRESSED:
-            // shift_flag = shift_flag == 0 ? 1 : 0;
+
             shift_flag = 1;
             //set shift flag to 1
             send_eoi(1);
-            sti();
             return;
         case RIGHT_SHIFT_PRESSED:
             //set shift flag to 1
             shift_flag = 1;
             send_eoi(1);
-            sti();
             return;
         case LEFT_SHIFT_RELEASED:
             //set shift flag to 0
@@ -112,14 +110,10 @@ void keyboard_interrupt(void){
         case LEFT_CONTROL_PRESSED:
             control_flag = 1;
             break;
-        // case RIGHT_CONTROL_PRESSED:
-        //     control_flag = 1;
-        
+
         case LEFT_CONTROL_RELEASED:
             control_flag = 0;
             break;
-        // case RIGHT_CONTROL_RELEASED:
-        //     control_flag = 0;
 
         case L_PRESSED:
             l_flag = 1;
@@ -155,21 +149,18 @@ void keyboard_interrupt(void){
             break;
     }
 
+    
     if (scan_code < MAX_SCAN_CODES && scan_code > 0) {
 
+        //clear screen
         if(control_flag == 1){
             if(scan_code == L_PRESSED){
                 clear_terminal();
-                return;
             }
-
-            // else if(scan_code == C_PRESSED){
-            //     halt(0);
-            // }
             return;
         }
 
-
+        /*switch to respective terminal*/
         if(alt_flag == 1){
             if(scan_code == F1_PRESSED){
                 switch_terminal(0);
@@ -195,51 +186,53 @@ void keyboard_interrupt(void){
             }
             
         }
+
+        else if(scan_code == ENTER_PRESSED){
+            putc(upppercase_characters[scan_code]);
+            terminal_update_buffer(upppercase_characters[scan_code]);
+        }
+
+        /*default case for printing any character*/
         else if(caps_lock_flag == 0) {
             //shift pressed while caps lock is off
             if(shift_flag == 1){
-                //
-                putc(upppercase_characters[scan_code]);
-                terminal_update_buffer(upppercase_characters[scan_code]);
+                if (terminals[active_terminal].position != (KEYBOARD_BUFFER_SIZE -2)){
+                    putc(upppercase_characters[scan_code]);
+                    terminal_update_buffer(upppercase_characters[scan_code]);
+                }
+                
             }
 
             //shift isn't pressed while caps lock is off
             else if (shift_flag == 0){
-                putc(lowercase_characters[scan_code]);
-                //function to add to buffer
-                terminal_update_buffer(lowercase_characters[scan_code]);
+                if ( terminals[active_terminal].position != (KEYBOARD_BUFFER_SIZE -2) ){
+                    putc(lowercase_characters[scan_code]);
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
             }
         }
         else if(caps_lock_flag == 1){
 
             //shift pressed while caps lock is on
             if(shift_flag == 1){
-                putc(lowercase_characters[scan_code]);
-                terminal_update_buffer(lowercase_characters[scan_code]);
+                if ( terminals[active_terminal].position != (KEYBOARD_BUFFER_SIZE -2) ){
+                    putc(lowercase_characters[scan_code]);
+                    terminal_update_buffer(lowercase_characters[scan_code]);
+                }
             }
             else{
-            //else if(shift_flag == 0)
-                // putc('!');
-                putc(upppercase_characters[scan_code]);
-                terminal_update_buffer(upppercase_characters[scan_code]);
+                if ( terminals[active_terminal].position != (KEYBOARD_BUFFER_SIZE -2) ){
+                    putc(upppercase_characters[scan_code]);
+                    terminal_update_buffer(upppercase_characters[scan_code]);
+                }
             }
         }
 
 
     }
      
-    /* after each key send eoi */
-    
-    // sti();
-    //update terminal buffer 
-    //print the actual character as well using putc 
 }
 
-
-int get_enter_flag(){
-    return(enter_flag);
-
-}
 
 
 /* helper */

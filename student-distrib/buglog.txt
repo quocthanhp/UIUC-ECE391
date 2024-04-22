@@ -67,3 +67,28 @@ BUG17:
 
 BUG18:
     trying to putc null characters caused it to print incorrect characters. Fixed by only doing putc for non null characters
+
+BUG19:
+    forgetting to flush tlb when setting up paging for multiple terminals' video memory. Resulted in incorrect contents being present at the designated locations
+
+BUG20: 
+    indices for the terminal video memory were initially mapped to the wrong location, resulting in page faults for trying to access invalid memory
+
+BUG21:
+    vertical scrolling bugged since we didn't properly handle the case of a newline character being printed when we reached the bottom right position of the screen. It was first noticed
+    in pingpong. Resolved by checking if the character being added to the end was a newline, and if it is, to be handled by the newline case of the putc function
+
+BUG22:
+    before switching terminals, we didn't re enable interrupts, so it resulted in no interrupts being generated after switching to a different terminal. Resolved by calling sti as soon
+    as we enter the keyboard handler
+
+BUG23:
+    terminal init didn't intitialize the positions for each terminal correctly. Resulted in not being able to execute any command once only when we first switched into that terminal
+
+BUG24:
+    keyboard was still accepting inputs past 127 characters. Resolved by adding a condition to only update the buffer if it wasn't full
+
+BUG25:
+    once the previous change was added, enter would not be recognized once we type 127 characters since we didn't accept any inputs once the buffer was filled. Resolved by handling enter
+    as a separate case in the keyboard in which we always update the buffer if enter is pressed
+

@@ -55,5 +55,4 @@ void keyboard_interrupt(void);
 void print_code(uint8_t scan_code);
 uint8_t get_key(void);
 
-int get_enter_flag();
 #endif

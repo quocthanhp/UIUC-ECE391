@@ -60,11 +60,18 @@ void pageInit()
     return;
 }
 
-//improve efficiency later by making a single function 
-void Term1PageInit()
-{
-    uint32_t pdeid = (TERM1_MEMORY >> PAGE_DIRECTORY_INDEX_OFFSET);
-    uint32_t pteid = ( (TERM1_MEMORY & PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
+/*
+ * terminal_page_int
+ * sets up the paging structures (page table and page directory)
+ * for the video memory contents of each terminal
+ * INPUTS:index of the terminal whose video memory to be initialized
+ * OUTPUTS:NONE
+ * SIDE EFFECTS: enables paging at the desired memory indices
+ */
+void terminal_page_init(int terminal_index)
+{   
+    uint32_t pdeid = (terminals[terminal_index].video_memory >> PAGE_DIRECTORY_INDEX_OFFSET);
+    uint32_t pteid = ( (terminals[terminal_index].video_memory & PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
 
     page_directory[pdeid].pde_KB.isPageSize = 0; 
     page_directory[pdeid].pde_KB.isPresent = 1;
@@ -75,55 +82,7 @@ void Term1PageInit()
     page_table[pteid].isPresent = 1;
     page_table[pteid].isReadWrite = 1;
     page_table[pteid].isUserSupervisor = 1;
-    page_table[pteid].pageBaseAddr = ((TERM1_MEMORY) >> PAGE_TABLE_OFFSET);
-    flush_tlb();
-return;
-}
+    page_table[pteid].pageBaseAddr = ((terminals[terminal_index].video_memory) >> PAGE_TABLE_OFFSET);
 
-void Term2PageInit()
-{
-    uint32_t pdeid = (TERM2_MEMORY >> PAGE_DIRECTORY_INDEX_OFFSET);
-    uint32_t pteid = ( (TERM2_MEMORY & PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
-
-    page_directory[pdeid].pde_KB.isPageSize = 0; 
-    page_directory[pdeid].pde_KB.isPresent = 1;
-    page_directory[pdeid].pde_KB.isUserSupervisor = 1;
-    page_directory[pdeid].pde_KB.isReadWrite = 1;
-    page_directory[pdeid].pde_KB.pageTableBaseAddr = ((uint32_t) page_table >> PAGE_TABLE_OFFSET);
-    
-    page_table[pteid].isPresent = 1;
-    page_table[pteid].isReadWrite = 1;
-    page_table[pteid].isUserSupervisor = 1;
-    page_table[pteid].pageBaseAddr = ((TERM2_MEMORY) >> PAGE_TABLE_OFFSET);
-    flush_tlb();
-return;
-}
-
-void Term3PageInit()
-{
-    uint32_t pdeid = (TERM3_MEMORY >> PAGE_DIRECTORY_INDEX_OFFSET);
-    uint32_t pteid = ( (TERM3_MEMORY & PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
-
-    page_directory[pdeid].pde_KB.isPageSize = 0; 
-    page_directory[pdeid].pde_KB.isPresent = 1;
-    page_directory[pdeid].pde_KB.isUserSupervisor = 1;
-    page_directory[pdeid].pde_KB.isReadWrite = 1;
-    page_directory[pdeid].pde_KB.pageTableBaseAddr = ((uint32_t) page_table >> PAGE_TABLE_OFFSET);
-    
-    page_table[pteid].isPresent = 1;
-    page_table[pteid].isReadWrite = 1;
-    page_table[pteid].isUserSupervisor = 1;
-    page_table[pteid].pageBaseAddr = ((TERM3_MEMORY) >> PAGE_TABLE_OFFSET);
-
-    flush_tlb();
-return;
-}
-
-void swap_video_memory(int active_terminal_id){
-
-    uint32_t pdeid = (VIDEO_MEMORY_INDEX >> PAGE_DIRECTORY_INDEX_OFFSET);
-    uint32_t pteid = ( (VIDEO_MEMORY_INDEX & PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
-
-    page_table[pteid].pageBaseAddr = ((uint32_t)terminals[active_terminal_id].video_memory >> PAGE_TABLE_OFFSET);
     flush_tlb();
 }

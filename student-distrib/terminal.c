@@ -10,13 +10,12 @@
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
-terminal_t terminals[3]; // make array of 3
-int active_terminal = 0;
+terminal_t terminals[MAX_TERMINALS]; // make array of 3
+int active_terminal = 0; //global variable to know which terminal is actively being shown
 
-int terminal_2_flag = 0;
+/*flags to know if we switch to these terminals for the first time*/
+int terminal_2_flag = 0;    
 int terminal_3_flag = 0;
-
-char* displayed_video_mem = (char *)VIDEO;
 
 void reset_terminal_pos(){
     terminals[active_terminal].position = -1;
@@ -36,12 +35,11 @@ void clear_terminal(terminal_t term){
     //clear() defined within lib.h
     clear();
     terminals[active_terminal].position = -1;
-    // terminals[active_terminal].screen_x = 0;
-    // terminals[active_terminal].screen_y = 0;
+    terminals[active_terminal].screen_x = 0;
+    terminals[active_terminal].screen_y = 0;
 
     //reset the cursor to the top left position. 
 
-    /*need to add something to change cursor position to be in the top left */
 }
 
 /*
@@ -60,7 +58,7 @@ int terminal_open(const uint8_t * filename){
     for (i = 0; i < KEYBOARD_BUFFER_SIZE; i++){
             terminals[active_terminal].terminal_buffer[i] = '\0';    //setting the static terminal buffer to be null characters
         }
-    terminals[active_terminal].terminal_buffer[128] = '\0';
+    terminals[active_terminal].terminal_buffer[(KEYBOARD_BUFFER_SIZE -1)] = '\0';
     clear_terminal(terminals[active_terminal]);
     return 0;
 
@@ -140,7 +138,7 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
 
     sti();
 
-    if(bytes_read > 0){
+    if(bytes_read >= 0){
         return bytes_read;
     }
     else{
@@ -202,18 +200,11 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         terminals[active_terminal].position = terminals[active_terminal].position + 1;
         terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = '\n';
     }
-    else if(terminals[active_terminal].position == (KEYBOARD_BUFFER_SIZE -2 )){
 
-        terminals[active_terminal].position = (terminals[active_terminal].position) + 1;
-        terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = character;  
-        terminals[active_terminal].terminal_buffer[KEYBOARD_BUFFER_SIZE-1] = '\n';
-
-    }
     else if( (terminals[active_terminal].position < (KEYBOARD_BUFFER_SIZE -1)) ){
         terminals[active_terminal].position = (terminals[active_terminal].position) + 1;         
         terminals[active_terminal].terminal_buffer[terminals[active_terminal].position] = character;
     }
-   // what should 
     
  }
 
@@ -258,12 +249,18 @@ int get_terminal_position(void){
 
 }
 
-
+/*
+ * switch_terminal()
+ * switches the contents of video memory from the previous terminal
+ * to the contents of the terminal being switched to
+ * and changes relevant parameters (cursor)
+ * INPUTS: terminal id to be switching to
+ * OUTPUTS: none
+ * SIDE EFFECTS: modifies contents of terminal memory and displayed memory
+ */
 void switch_terminal(int id){
 
     int prev_active_terminal = active_terminal;
-
-    // swap_video_memory(id);
 
     memcpy((char *)terminals[prev_active_terminal].video_memory , (char * ) VIDEO, 4096); // storing the contents of vid memory into the terminal that WAS being displayed
 
@@ -271,92 +268,69 @@ void switch_terminal(int id){
 
     active_terminal = id; //changing active terminal 
 
-    // clear_terminal_buffer(prev_active_terminal);
     update_cursor( terminals[active_terminal].screen_x, terminals[active_terminal].screen_y); //updating displayed cursor position
 
+    /*case for switching to these terminals for the first time*/
     if(active_terminal == 1){
         if (terminal_2_flag == 0){
+             terminal_2_flag = 1;
             execute((const uint8_t *)"shell");
-            terminal_2_flag = 1;
+           
         }
     }
 
     if(active_terminal == 2){
         if (terminal_3_flag == 0){
+             terminal_3_flag = 1;
             execute((const uint8_t *)"shell");
-            terminal_3_flag = 1;
+           
         }
     }
 
-    //sav
 }
 
+/*
+ * terminal_int()
+ * initializes the contents of the three terminals
+ * each terminal gets its respective video memory address
+ * sets the postion variables to 0
+ * and clears contents of each terminal buffer
+ * INPUTS: none
+ * OUTPUTS: none
+ * SIDE EFFECTS: clears contents and initializes respective parameters 
+ */
 void terminal_init(){
     int i;
     int j;
-    int k;
+
     for(i = 0; i < 3; i++){
         
+        //setting to point to the top left
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
         terminals[i].position = -1;
 
-
-        // switch (i)
-        // {
-        // case 0:
-        //     terminals[i].video_memory =  TERM1_MEMORY;
-            
-        //     break;
-
-        // case 1:
-        //     terminals[i].video_memory =  TERM2_MEMORY;
-        //     Term2PageInit();
-        //     break;
-        // case 2:
-        //     terminals[i].video_memory =  TERM3_MEMORY;
-        //     Term3PageInit();
-        //     break;
-
-        // default:
-        //     break;
-        // } 
-
+        //making each terminal point to the correct memory address
         if( i == 0){
             terminals[i].video_memory = TERM1_MEMORY;
-            Term1PageInit();
         }
 
         else if( i == 1){
             terminals[i].video_memory = TERM2_MEMORY;
-            Term2PageInit();
+
         }
         
         else if( i==2){
             terminals[i].video_memory = TERM3_MEMORY;
-            Term3PageInit();
         }
 
+        terminal_page_init(i);
+
+        //clearing each buffer
         for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
 
             terminals[i].terminal_buffer[j] = '\0';
         }
-
-            // for (k = 0; k < NUM_ROWS * NUM_COLS; k++) {
-            //     *(uint8_t *)(terminals[i].video_memory + (i << 1)) = ' ';
-            //     *(uint8_t *)(terminals[i].video_memory + (i << 1) + 1) = ATTRIB;
-            //  }
-
     }
     
-}
-
-void clear_terminal_buffer(int id){
-
-    int j;
-    for (j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
-        terminals[id].terminal_buffer[j] = '\0';
-    }
-
-    terminals[id].position = -1; 
 }

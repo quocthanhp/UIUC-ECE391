@@ -7,6 +7,7 @@
 #define TERMINAL_COLUMNS 80
 #define TERMINAL_ROWS 25
 #define KEYBOARD_BUFFER_SIZE 128
+#define MAX_TERMINALS   3
 
 typedef struct terminal{
     char terminal_buffer[KEYBOARD_BUFFER_SIZE];
@@ -30,6 +31,5 @@ int get_terminal_position();
 void reset_terminal_pos();
 void switch_terminal(int id);
 void terminal_init();
-void clear_terminal_buffer(int id);
 
 #endif /* _TERMINAL_H */

@@ -26,7 +26,6 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry) {
     uint32_t f_len = strlen((int8_t *) fname);
     
     if (fname == NULL || dentry == NULL || f_len > MAX_FILE_NAME) {
-        printf("Invalid parameters\n");
         return -1;
     }
 

@@ -181,7 +181,7 @@ void putc(uint8_t c) {
     if (c == '\0') {
         return;
     }
-   if((terminals[active_terminal].screen_x == (NUM_COLS -1) && (terminals[active_terminal].screen_y == (NUM_ROWS -1))) ){
+   if( (terminals[active_terminal].screen_x == (NUM_COLS -1) && (terminals[active_terminal].screen_y == (NUM_ROWS -1))) && ((c != '\n') || (c == '\r'))){
 
         int i; 
         int j;
@@ -201,6 +201,7 @@ void putc(uint8_t c) {
             }
             
             terminals[active_terminal].screen_x = 0;
+            terminals[active_terminal].screen_y = NUM_ROWS -1;
 
     }
     if(c == '\n' || c == '\r') {

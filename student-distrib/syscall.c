@@ -356,7 +356,7 @@ int32_t halt (uint8_t status){
     int32_t i;
     /* Close all file descriptors */ 
     for(i=0; i< FD_ARRAY_SIZE; i++){
-        cur_pcb_ptr->fd_array[i].flags = 0;
+        close(i);
     }
 
     /*prevent exiting from the base shell*/

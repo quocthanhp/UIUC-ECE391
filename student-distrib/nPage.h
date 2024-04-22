@@ -22,11 +22,7 @@
 
 // this is to call initialization of page
 void pageInit();
-void Term1PageInit();
-void Term2PageInit();
-void Term3PageInit();
-
-void swap_video_memory(int active_terminal_id);
+void terminal_page_init(int terminal_index);
 
 void enable_paging(unsigned int * page_directory);
 #endif
