@@ -30,5 +30,6 @@ int get_terminal_position();
 void reset_terminal_pos();
 void switch_terminal(int id);
 void terminal_init();
+void clear_terminal_buffer(int id);
 
 #endif /* _TERMINAL_H */

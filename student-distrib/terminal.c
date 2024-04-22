@@ -271,6 +271,7 @@ void switch_terminal(int id){
 
     active_terminal = id; //changing active terminal 
 
+    // clear_terminal_buffer(prev_active_terminal);
     update_cursor( terminals[active_terminal].screen_x, terminals[active_terminal].screen_y); //updating displayed cursor position
 
     if(active_terminal == 1){
@@ -348,4 +349,14 @@ void terminal_init(){
 
     }
     
+}
+
+void clear_terminal_buffer(int id){
+
+    int j;
+    for (j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
+        terminals[id].terminal_buffer[j] = '\0';
+    }
+
+    terminals[id].position = -1; 
 }

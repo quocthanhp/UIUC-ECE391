@@ -160,11 +160,13 @@ void keyboard_interrupt(void){
         if(control_flag == 1){
             if(scan_code == L_PRESSED){
                 clear_terminal();
+                return;
             }
 
-            else if(scan_code == C_PRESSED){
-                halt(0);
-            }
+            // else if(scan_code == C_PRESSED){
+            //     halt(0);
+            // }
+            return;
         }
 
 
@@ -181,6 +183,7 @@ void keyboard_interrupt(void){
                 switch_terminal(2);
                 return;
             }
+            return;
         }
 
         if(scan_code == BACKSPACE_PRESSED){
