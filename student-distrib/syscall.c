@@ -10,6 +10,9 @@ static uint32_t curr_pid = -1;
 extern void flush_tlb();
 static int32_t ret_val;
 
+extern terminal_t terminals[3]; 
+extern int active_terminal;
+
 /* uint32_t get_next_pid();
  * Inputs: None
  * Return Value: next process id
@@ -246,6 +249,8 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
+    terminals[active_terminal].processes[terminals[active_terminal].active_process++] = pid;
+
     /* Set up paging */
     set_program_page(pid);
 
@@ -361,11 +366,13 @@ int32_t halt (uint8_t status){
     }
 
     /*prevent exiting from the base shell*/
-    if(cur_pcb_ptr->pid == 0){ 
+    if(cur_pcb_ptr->pid == terminals[active_terminal].processes[0]){ 
        curr_pid = -1;
        execute((const uint8_t *)"shell");
        return ret_val;
     }
+
+    terminals[active_terminal].processes[terminals[active_terminal].active_process--] = -1; // free the space
 
     /* Restore parent process */
     pcb_t* parent_pcb_ptr;

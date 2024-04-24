@@ -2,12 +2,14 @@
 #define _TERMINAL_H
 
 #include "types.h"
+#include "syscall.h"
 /* constants to be used within terminal */
 //values taken from discussion slides
 #define TERMINAL_COLUMNS 80
 #define TERMINAL_ROWS 25
 #define KEYBOARD_BUFFER_SIZE 128
 #define MAX_TERMINALS   3
+
 
 typedef struct terminal{
     char terminal_buffer[KEYBOARD_BUFFER_SIZE];
@@ -16,7 +18,7 @@ typedef struct terminal{
     int position;
     //number of processes runnning
     uint32_t video_memory;
-    int processes[MAX_PROCESSES -1];
+    int processes[MAX_PROCESSES];
     int active_process; 
 
 } terminal_t;

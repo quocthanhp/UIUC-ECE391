@@ -306,6 +306,7 @@ void switch_terminal(int id){
 void terminal_init(){
     int i;
     int j;
+    int k;
 
     for(i = 0; i < 3; i++){
         
@@ -329,6 +330,11 @@ void terminal_init(){
         }
 
         terminal_page_init(i);
+
+        // intit process list
+        for (k = 0; k < MAX_PROCESSES; k++) {
+            terminals[i].processes[k] = -1;
+        }
 
         //clearing each buffer
         for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
