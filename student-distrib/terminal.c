@@ -260,6 +260,10 @@ int get_terminal_position(void){
  */
 void switch_terminal(int id){
 
+    //get_pcb ( terminals[id].processes[active_process])
+
+    //halt restore context 
+
     int prev_active_terminal = active_terminal;
 
     memcpy((char *)terminals[prev_active_terminal].video_memory , (char * ) VIDEO, 4096); // storing the contents of vid memory into the terminal that WAS being displayed

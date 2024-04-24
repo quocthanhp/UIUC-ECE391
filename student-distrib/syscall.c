@@ -240,6 +240,7 @@ int32_t execute(const uint8_t* command){
     /* Get new pid */
      uint32_t pid;
     pid = get_next_pid();
+    //terminals[active_terminal].processes[x] = pid
     if (pid == -1){
         sti();
         return -1;

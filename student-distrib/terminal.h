@@ -16,6 +16,8 @@ typedef struct terminal{
     int position;
     //number of processes runnning
     uint32_t video_memory;
+    int processes[MAX_PROCESSES -1];
+    int active_process; 
 
 } terminal_t;
 

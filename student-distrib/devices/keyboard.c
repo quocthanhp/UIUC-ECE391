@@ -163,6 +163,35 @@ void keyboard_interrupt(void){
         /*switch to respective terminal*/
         if(alt_flag == 1){
             if(scan_code == F1_PRESSED){
+
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                pcb_t * current_pcb = get_current_pcb();
+                current_pcb->ebp = prev_terminal_saved_ebp;
+
+                register uint32_t prev_terminal_saved_esp asm("esp"); 
+                current_pcb->esp = saved_esp;
+
+                int pid = current_pcb->pid;
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                    pushl    %%eax          \n\
+                    pushl    %%ebx          \n\
+                    pushfl                  \n\
+                    popl     %%eax          \n\
+                    orl      $0x200,%%eax   \n\
+                    pushl    %%eax          \n\
+                    pushl    %%ecx          \n\
+                    pushl    %%edx          \n\
+                    "
+                    :
+                    : "a" (USER_DS), "b" (PROGRAM_STACK_VIRTUAL - 4), "c" (USER_CS), "d" (prog_entry) 
+                    : "memory"
+                );
+
+                asm volatile ("iret");
                 switch_terminal(0);
                 return;
             }
