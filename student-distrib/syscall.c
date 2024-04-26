@@ -6,7 +6,7 @@
 #include "devices/RTC.h"
 #include "nPage.h"
 
-static uint32_t curr_pid = -1;
+uint32_t curr_pid[MAX_PROCESSES] = {-1, -1, -1, -1, -1, -1};
 extern void flush_tlb();
 static int32_t ret_val;
 
@@ -18,12 +18,25 @@ extern int active_terminal;
  * Return Value: next process id
  * Function: Get next process id */
 uint32_t get_next_pid() {
-    if (curr_pid == MAX_PROCESSES - 1) {
-        return -1;
+
+    int i;
+    int next_pid = -1;
+    for (i = 0; i < MAX_PROCESSES; i++){
+        if (curr_pid[i] == -1){
+            curr_pid[i] = i;
+            next_pid = i;
+            return next_pid;
+        }
+
     }
 
-    uint32_t next_pid = ++curr_pid;
     return next_pid;
+    // if (curr_pid == MAX_PROCESSES - 1) {
+    //     return -1;
+    // }
+
+    // uint32_t next_pid = ++curr_pid;
+    // return next_pid;
 }
 
 /* pcb_t *get_pcb(uint32_t pid);
@@ -268,10 +281,10 @@ int32_t execute(const uint8_t* command){
         return -1;
     }
 
-    if (pid == 0) {
-        prog_pcb->parent_id = 0; 
+    if (pid == terminals[active_terminal].processes[0]) {
+        prog_pcb->parent_id = pid; 
     } else {
-        prog_pcb->parent_id = pid - 1;
+        prog_pcb->parent_id = terminals[active_terminal].processes[ (terminals[active_terminal].active_process) - 1];
     }
 
     prog_pcb->pid = pid;
@@ -340,7 +353,8 @@ int32_t execute(const uint8_t* command){
  * Function: Return pointer to the current control block
 */
 pcb_t* get_current_pcb(void){
-    return (pcb_t *) (KERNAL_STACK - (curr_pid + 1) * KERNEL_STACK_SIZE);
+
+    return (pcb_t *) (KERNAL_STACK - ( (terminals[active_terminal].processes[terminals[active_terminal].active_process -1]) + 1) * KERNEL_STACK_SIZE);
 }
 
 /* int32_t halt (uint8_t status);
@@ -365,9 +379,15 @@ int32_t halt (uint8_t status){
         close(i);
     }
 
+    int pid_current;
+    pid_current = terminals[active_terminal].processes[terminals[active_terminal].active_process -1];
+    curr_pid[pid_current] = -1;
     /*prevent exiting from the base shell*/
+
+    
+
     if(cur_pcb_ptr->pid == terminals[active_terminal].processes[0]){ 
-       curr_pid = -1;
+
        execute((const uint8_t *)"shell");
        return ret_val;
     }
@@ -381,12 +401,10 @@ int32_t halt (uint8_t status){
         return -1;
     } 
 
-    reset_program_page(curr_pid);  //de allocate paging set up
+    reset_program_page(pid_current);  //de allocate paging set up
 
     tss.ss0 = KERNEL_DS;
     tss.esp0 = KERNAL_STACK - (parent_pcb_ptr->pid * KERNEL_STACK_SIZE) - sizeof(int32_t);
-
-    curr_pid = parent_pcb_ptr->pid;
 
     //sti();
 

@@ -13,10 +13,6 @@
 terminal_t terminals[MAX_TERMINALS]; // make array of 3
 int active_terminal = 0; //global variable to know which terminal is actively being shown
 
-/*flags to know if we switch to these terminals for the first time*/
-int terminal_2_flag = 0;    
-int terminal_3_flag = 0;
-
 void reset_terminal_pos(){
     terminals[active_terminal].position = -1;
 }
@@ -275,21 +271,6 @@ void switch_terminal(int id){
     update_cursor( terminals[active_terminal].screen_x, terminals[active_terminal].screen_y); //updating displayed cursor position
 
     /*case for switching to these terminals for the first time*/
-    if(active_terminal == 1){
-        if (terminal_2_flag == 0){
-             terminal_2_flag = 1;
-            execute((const uint8_t *)"shell");
-           
-        }
-    }
-
-    if(active_terminal == 2){
-        if (terminal_3_flag == 0){
-             terminal_3_flag = 1;
-            execute((const uint8_t *)"shell");
-           
-        }
-    }
 
 }
 
@@ -314,6 +295,7 @@ void terminal_init(){
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
         terminals[i].position = -1;
+        terminals[i].active_process = 0;
 
         //making each terminal point to the correct memory address
         if( i == 0){

@@ -2,11 +2,16 @@
 #include "keyboard.h"
 #include "../i8259.h"
 #include "../terminal.h"
+#include "../x86_desc.h"
 // #include "string.h"
 // #include "../lib.c" 
 
 extern terminal_t terminals[3]; // make array of 3
 extern int active_terminal;
+
+/*flags to know if we switch to these terminals for the first time*/
+int terminal_2_flag = 0;    
+int terminal_3_flag = 0;
 
 int caps_lock_flag; //turned off (0) by default 
 int shift_flag;
@@ -170,39 +175,106 @@ void keyboard_interrupt(void){
                 current_pcb->ebp = prev_terminal_saved_ebp;
 
                 register uint32_t prev_terminal_saved_esp asm("esp"); 
-                current_pcb->esp = saved_esp;
+                current_pcb->esp = prev_terminal_saved_esp;
 
-                int pid = current_pcb->pid;
+                switch_terminal(0);
+
+                int pid = terminals[0].processes[ (terminals[0].active_process) - 1];
+                pcb_t * active_terminal_pcb = get_pcb(pid);
+
                 tss.ss0 = KERNEL_DS;
                 tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
                 
                 asm volatile ("                 \n\
-                    pushl    %%eax          \n\
-                    pushl    %%ebx          \n\
-                    pushfl                  \n\
-                    popl     %%eax          \n\
-                    orl      $0x200,%%eax   \n\
-                    pushl    %%eax          \n\
-                    pushl    %%ecx          \n\
-                    pushl    %%edx          \n\
-                    "
-                    :
-                    : "a" (USER_DS), "b" (PROGRAM_STACK_VIRTUAL - 4), "c" (USER_CS), "d" (prog_entry) 
-                    : "memory"
+                        movl     %0,%%ebp       \n\
+                        movl     %1,%%esp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "memory"
+                );
+                
+                return;
+            }
+
+            if(scan_code == F2_PRESSED){
+
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                pcb_t * current_pcb = get_current_pcb();
+                current_pcb->ebp = prev_terminal_saved_ebp;
+
+                register uint32_t prev_terminal_saved_esp asm("esp"); 
+                current_pcb->esp = prev_terminal_saved_esp;
+
+                switch_terminal(1);
+
+                if (terminal_2_flag == 0){
+                    terminal_2_flag = 1;
+                    execute((const uint8_t *)"shell");
+                    return;
+                }
+
+                int pid = terminals[1].processes[ (terminals[1].active_process) - 1];
+                pcb_t * active_terminal_pcb = get_pcb(pid);
+
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                        movl     %0,%%ebp       \n\
+                        movl     %1,%%esp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "memory"
+                );
+                
+                return;
+            }
+                
+            if(scan_code == F3_PRESSED){
+                
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                pcb_t * current_pcb = get_current_pcb();
+                current_pcb->ebp = prev_terminal_saved_ebp;
+
+                register uint32_t prev_terminal_saved_esp asm("esp"); 
+                current_pcb->esp = prev_terminal_saved_esp;
+
+                switch_terminal(2);
+
+                if (terminal_3_flag == 0){
+                    terminal_3_flag = 1;
+                    execute((const uint8_t *)"shell");
+                    return;
+                }
+
+                int pid = terminals[2].processes[ (terminals[2].active_process) - 1];
+                pcb_t * active_terminal_pcb = get_pcb(pid);
+
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                        movl     %0,%%ebp       \n\
+                        movl     %1,%%esp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "memory"
                 );
 
-                asm volatile ("iret");
-                switch_terminal(0);
                 return;
             }
-            if(scan_code == F2_PRESSED){
-                switch_terminal(1);
-                return;
-            }
-            if(scan_code == F3_PRESSED){
-                switch_terminal(2);
-                return;
-            }
+
             return;
         }
 
