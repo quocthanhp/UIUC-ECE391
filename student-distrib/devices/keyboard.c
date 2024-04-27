@@ -3,6 +3,7 @@
 #include "../i8259.h"
 #include "../terminal.h"
 #include "../x86_desc.h"
+#include "../syscall.h"
 // #include "string.h"
 // #include "../lib.c" 
 
@@ -66,6 +67,9 @@ int nothing = NULL;
 void keyboard_interrupt(void){
 
 /* google says keybaord is usually irq 1*/ 
+    // register uint32_t prev_terminal_saved_ebp asm("ebp");
+    // pcb_t * current_pcb = get_current_pcb();
+    // current_pcb->ebp = prev_terminal_saved_ebp;
     // cli();
     send_eoi(1);
     uint8_t scan_code = get_key();
@@ -174,25 +178,26 @@ void keyboard_interrupt(void){
                 pcb_t * current_pcb = get_current_pcb();
                 current_pcb->ebp = prev_terminal_saved_ebp;
 
-                register uint32_t prev_terminal_saved_esp asm("esp"); 
-                current_pcb->esp = prev_terminal_saved_esp;
+                // register uint32_t prev_terminal_saved_esp asm("esp"); 
+                // current_pcb->esp = prev_terminal_saved_esp;
 
                 switch_terminal(0);
 
                 int pid = terminals[0].processes[ (terminals[0].active_process) - 1];
                 pcb_t * active_terminal_pcb = get_pcb(pid);
 
+                set_program_page(pid); 
+
                 tss.ss0 = KERNEL_DS;
                 tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
                 
                 asm volatile ("                 \n\
                         movl     %0,%%ebp       \n\
-                        movl     %1,%%esp       \n\
                         leave                   \n\
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "r" (active_terminal_pcb->ebp)
                         : "memory"
                 );
                 
@@ -206,8 +211,8 @@ void keyboard_interrupt(void){
                 pcb_t * current_pcb = get_current_pcb();
                 current_pcb->ebp = prev_terminal_saved_ebp;
 
-                register uint32_t prev_terminal_saved_esp asm("esp"); 
-                current_pcb->esp = prev_terminal_saved_esp;
+                // register uint32_t prev_terminal_saved_esp asm("esp"); 
+                // current_pcb->esp = prev_terminal_saved_esp;
 
                 switch_terminal(1);
 
@@ -219,18 +224,18 @@ void keyboard_interrupt(void){
 
                 int pid = terminals[1].processes[ (terminals[1].active_process) - 1];
                 pcb_t * active_terminal_pcb = get_pcb(pid);
+                set_program_page( pid);
 
                 tss.ss0 = KERNEL_DS;
                 tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
                 
                 asm volatile ("                 \n\
                         movl     %0,%%ebp       \n\
-                        movl     %1,%%esp       \n\
                         leave                   \n\
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "r" (active_terminal_pcb->ebp)
                         : "memory"
                 );
                 
@@ -244,8 +249,8 @@ void keyboard_interrupt(void){
                 pcb_t * current_pcb = get_current_pcb();
                 current_pcb->ebp = prev_terminal_saved_ebp;
 
-                register uint32_t prev_terminal_saved_esp asm("esp"); 
-                current_pcb->esp = prev_terminal_saved_esp;
+                // register uint32_t prev_terminal_saved_esp asm("esp"); 
+                // current_pcb->esp = prev_terminal_saved_esp;
 
                 switch_terminal(2);
 
@@ -258,17 +263,17 @@ void keyboard_interrupt(void){
                 int pid = terminals[2].processes[ (terminals[2].active_process) - 1];
                 pcb_t * active_terminal_pcb = get_pcb(pid);
 
+                set_program_page(pid);
                 tss.ss0 = KERNEL_DS;
                 tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
                 
                 asm volatile ("                 \n\
                         movl     %0,%%ebp       \n\
-                        movl     %1,%%esp       \n\
                         leave                   \n\
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp), "r" (active_terminal_pcb->esp)
+                        : "r" (active_terminal_pcb->ebp)
                         : "memory"
                 );
 

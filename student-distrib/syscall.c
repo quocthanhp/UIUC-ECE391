@@ -6,7 +6,7 @@
 #include "devices/RTC.h"
 #include "nPage.h"
 
-uint32_t curr_pid[MAX_PROCESSES] = {-1, -1, -1, -1, -1, -1};
+int32_t curr_pid[MAX_PROCESSES] = {-1, -1, -1, -1, -1, -1};
 extern void flush_tlb();
 static int32_t ret_val;
 
@@ -81,8 +81,12 @@ void reset_program_page(uint32_t pid) {
       only thing we need to do is reset the physical address
       */
     uint32_t pde_id = (PROGRAM_VIRTUAL >> PAGE_DIR_OFFSET);
+
+    int parent_pid;
+    pcb_t * current_pcb = get_pcb(pid);
+    parent_pid = current_pcb->parent_id;
   
-    page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + ((pid -1) * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
+    page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + ((parent_pid) * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
 
     //de allocating pages set during vidmap
     uint32_t pdid = (VIDMAP_MEMORY_INDEX >> PAGE_DIR_OFFSET);
@@ -284,7 +288,7 @@ int32_t execute(const uint8_t* command){
     if (pid == terminals[active_terminal].processes[0]) {
         prog_pcb->parent_id = pid; 
     } else {
-        prog_pcb->parent_id = terminals[active_terminal].processes[ (terminals[active_terminal].active_process) - 1];
+        prog_pcb->parent_id = terminals[active_terminal].processes[ (terminals[active_terminal].active_process) - 2];
     }
 
     prog_pcb->pid = pid;
@@ -392,7 +396,7 @@ int32_t halt (uint8_t status){
        return ret_val;
     }
 
-    terminals[active_terminal].processes[terminals[active_terminal].active_process--] = -1; // free the space
+    terminals[active_terminal].processes[--terminals[active_terminal].active_process] = -1; // free the space
 
     /* Restore parent process */
     pcb_t* parent_pcb_ptr;
