@@ -10,6 +10,10 @@
 #define KEYBOARD_BUFFER_SIZE 128
 #define MAX_TERMINALS   3
 
+#define TERMINAL_ONE  0
+#define TERMINAL_TWO  1
+#define TERMINAL_THREE 2
+
 
 typedef struct terminal{
     char terminal_buffer[KEYBOARD_BUFFER_SIZE];
@@ -20,6 +24,8 @@ typedef struct terminal{
     uint32_t video_memory;
     int processes[MAX_PROCESSES];
     int active_process; 
+    uint32_t ebp;
+    uint32_t esp;
 
 } terminal_t;
 

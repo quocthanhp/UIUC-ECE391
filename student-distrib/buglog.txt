@@ -92,3 +92,12 @@ BUG25:
     once the previous change was added, enter would not be recognized once we type 127 characters since we didn't accept any inputs once the buffer was filled. Resolved by handling enter
     as a separate case in the keyboard in which we always update the buffer if enter is pressed
 
+BUG26:
+    switching the terminals was overriding the esp and ebp saved within the execute system call. Fixed by adding esp and ebp fields in the terminal struct, which were used to restore context
+    before switching 
+
+BUG27:
+    we were not saving the context of the previous terminal's program and restoring the context of the current terminal's program's context, resulting in the background programs not halting correctly
+    Fixed by adding context switching within the keyboard interrupt handler function
+
+

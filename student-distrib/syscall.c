@@ -31,12 +31,6 @@ uint32_t get_next_pid() {
     }
 
     return next_pid;
-    // if (curr_pid == MAX_PROCESSES - 1) {
-    //     return -1;
-    // }
-
-    // uint32_t next_pid = ++curr_pid;
-    // return next_pid;
 }
 
 /* pcb_t *get_pcb(uint32_t pid);
@@ -71,6 +65,7 @@ void set_program_page(uint32_t pid) {
     flush_tlb();
 }
 
+
 /* reset_program_page(uint32_t pid);
  * Inputs: uint32_t pid = process id
  * Return Value: None
@@ -89,10 +84,10 @@ void reset_program_page(uint32_t pid) {
     page_directory[pde_id].pde_MB.pageBaseAddr = (PROGRAM_PHYSICAL + ((parent_pid) * PROGRAM_SPACE)) >> PAGE_FRAME_OFFSET ;
 
     //de allocating pages set during vidmap
-    uint32_t pdid = (VIDMAP_MEMORY_INDEX >> PAGE_DIR_OFFSET);
-    uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);
-    page_directory[pdid].pde_KB.isPresent = 0;
-    page_table[pteid].isPresent = 0;
+    // uint32_t pdid = ((VIDMAP_MEMORY_INDEX) >> PAGE_DIR_OFFSET) + active_terminal;
+    // uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET) + active_terminal;
+    // page_directory[pdid].pde_KB.isPresent = 0;
+    // page_table[pteid].isPresent = 0;
 
     flush_tlb();
 }
@@ -357,7 +352,13 @@ int32_t execute(const uint8_t* command){
  * Function: Return pointer to the current control block
 */
 pcb_t* get_current_pcb(void){
-
+    
+    if((terminals[active_terminal].active_process == 0) & (terminals[active_terminal].processes[terminals[active_terminal].active_process] == -1)){
+        return NULL;
+    }
+    if (terminals[active_terminal].processes[terminals[active_terminal].active_process -1] == -1){
+        return NULL;
+    }
     return (pcb_t *) (KERNAL_STACK - ( (terminals[active_terminal].processes[terminals[active_terminal].active_process -1]) + 1) * KERNEL_STACK_SIZE);
 }
 
@@ -461,8 +462,6 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     if(curr_pcb->fd_array[fd].flags == FD_FREE) return -1; 
 
     return curr_pcb->fd_array[fd].file_operations.write(fd,buf,nbytes);
-
-    //return 0;
 }
 
 /* open(const uint8_t* filename);
@@ -579,8 +578,8 @@ int32_t vidmap(uint8_t** screen_start) {
     }
 
     *screen_start = (uint8_t *) VIDMAP_MEMORY_INDEX; //setting the screen_start pointer to point to start of vidmap memory
-    uint32_t pdeid = (VIDMAP_MEMORY_INDEX >> PAGE_DIRECTORY_INDEX_OFFSET);
-    uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET);  
+    uint32_t pdeid = ((VIDMAP_MEMORY_INDEX) >> PAGE_DIR_OFFSET);
+    uint32_t pteid = ( (VIDMAP_MEMORY_INDEX && PAGE_TABLE_INDEX) >> PAGE_TABLE_OFFSET); 
 
     page_directory[pdeid].pde_KB.isPageSize = 0; 
     page_directory[pdeid].pde_KB.isPresent = 1;

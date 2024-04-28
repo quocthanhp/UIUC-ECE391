@@ -10,6 +10,8 @@
 extern terminal_t terminals[3]; // make array of 3
 extern int active_terminal;
 
+extern int32_t curr_pid[MAX_PROCESSES];
+
 /*flags to know if we switch to these terminals for the first time*/
 int terminal_2_flag = 0;    
 int terminal_3_flag = 0;
@@ -175,16 +177,14 @@ void keyboard_interrupt(void){
 
                 //perform context switch 
                 register uint32_t prev_terminal_saved_ebp asm("ebp");
-                pcb_t * current_pcb = get_current_pcb();
-                current_pcb->ebp = prev_terminal_saved_ebp;
+                register uint32_t prev_terminal_saved_esp asm("esp");
 
-                // register uint32_t prev_terminal_saved_esp asm("esp"); 
-                // current_pcb->esp = prev_terminal_saved_esp;
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
 
-                switch_terminal(0);
+                switch_terminal(TERMINAL_ONE); //switching to corresponding terminal's video memory
 
-                int pid = terminals[0].processes[ (terminals[0].active_process) - 1];
-                pcb_t * active_terminal_pcb = get_pcb(pid);
+                int pid = terminals[TERMINAL_ONE].processes[ (terminals[TERMINAL_ONE].active_process) - 1];
 
                 set_program_page(pid); 
 
@@ -197,7 +197,7 @@ void keyboard_interrupt(void){
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp)
+                        : "r" (terminals[active_terminal].ebp)
                         : "memory"
                 );
                 
@@ -208,22 +208,26 @@ void keyboard_interrupt(void){
 
                 //perform context switch 
                 register uint32_t prev_terminal_saved_ebp asm("ebp");
-                pcb_t * current_pcb = get_current_pcb();
-                current_pcb->ebp = prev_terminal_saved_ebp;
+                register uint32_t prev_terminal_saved_esp asm("esp");
+            
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
 
-                // register uint32_t prev_terminal_saved_esp asm("esp"); 
-                // current_pcb->esp = prev_terminal_saved_esp;
-
-                switch_terminal(1);
-
+                switch_terminal(TERMINAL_TWO); //switching to corresponding terminal's video memory
+                
+                /*starting a base shell the first time we switch to this terminal*/
                 if (terminal_2_flag == 0){
+
+                    if(curr_pid[(MAX_PROCESSES - 1)] != -1){
+                        return;
+                    }
+
                     terminal_2_flag = 1;
                     execute((const uint8_t *)"shell");
                     return;
                 }
 
-                int pid = terminals[1].processes[ (terminals[1].active_process) - 1];
-                pcb_t * active_terminal_pcb = get_pcb(pid);
+                int pid = terminals[TERMINAL_TWO].processes[ (terminals[TERMINAL_TWO].active_process) - 1];
                 set_program_page( pid);
 
                 tss.ss0 = KERNEL_DS;
@@ -235,7 +239,7 @@ void keyboard_interrupt(void){
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp)
+                        : "r" (terminals[active_terminal].ebp)
                         : "memory"
                 );
                 
@@ -246,22 +250,26 @@ void keyboard_interrupt(void){
                 
                 //perform context switch 
                 register uint32_t prev_terminal_saved_ebp asm("ebp");
-                pcb_t * current_pcb = get_current_pcb();
-                current_pcb->ebp = prev_terminal_saved_ebp;
+                register uint32_t prev_terminal_saved_esp asm("esp");
+                
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
 
-                // register uint32_t prev_terminal_saved_esp asm("esp"); 
-                // current_pcb->esp = prev_terminal_saved_esp;
+                switch_terminal(TERMINAL_THREE);  //switching to corresponding terminal's video memory
 
-                switch_terminal(2);
-
+                /*starting a base shell the first time we switch to this terminal*/
                 if (terminal_3_flag == 0){
+
+                    if(curr_pid[(MAX_PROCESSES - 1)] != -1){
+                        return;
+                    }
+
                     terminal_3_flag = 1;
                     execute((const uint8_t *)"shell");
                     return;
                 }
 
-                int pid = terminals[2].processes[ (terminals[2].active_process) - 1];
-                pcb_t * active_terminal_pcb = get_pcb(pid);
+                int pid = terminals[TERMINAL_THREE].processes[ (terminals[TERMINAL_THREE].active_process) - 1];
 
                 set_program_page(pid);
                 tss.ss0 = KERNEL_DS;
@@ -273,7 +281,7 @@ void keyboard_interrupt(void){
                         ret                     \n\
                         "
                         :
-                        : "r" (active_terminal_pcb->ebp)
+                        : "r" (terminals[active_terminal].ebp)
                         : "memory"
                 );
 

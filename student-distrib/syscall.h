@@ -77,7 +77,7 @@ int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn(void);
 
 pcb_t* get_current_pcb(void);
-pcb_t *get_pcb(uint32_t pid);
+pcb_t* get_pcb(uint32_t pid);
 
 void set_program_page(uint32_t pid);
 
