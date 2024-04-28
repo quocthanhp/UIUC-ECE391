@@ -2,11 +2,19 @@
 #include "keyboard.h"
 #include "../i8259.h"
 #include "../terminal.h"
+#include "../x86_desc.h"
+#include "../syscall.h"
 // #include "string.h"
 // #include "../lib.c" 
 
 extern terminal_t terminals[3]; // make array of 3
 extern int active_terminal;
+
+extern int32_t curr_pid[MAX_PROCESSES];
+
+/*flags to know if we switch to these terminals for the first time*/
+int terminal_2_flag = 0;    
+int terminal_3_flag = 0;
 
 int caps_lock_flag; //turned off (0) by default 
 int shift_flag;
@@ -61,6 +69,9 @@ int nothing = NULL;
 void keyboard_interrupt(void){
 
 /* google says keybaord is usually irq 1*/ 
+    // register uint32_t prev_terminal_saved_ebp asm("ebp");
+    // pcb_t * current_pcb = get_current_pcb();
+    // current_pcb->ebp = prev_terminal_saved_ebp;
     // cli();
     send_eoi(1);
     uint8_t scan_code = get_key();
@@ -163,17 +174,120 @@ void keyboard_interrupt(void){
         /*switch to respective terminal*/
         if(alt_flag == 1){
             if(scan_code == F1_PRESSED){
-                switch_terminal(0);
+
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                register uint32_t prev_terminal_saved_esp asm("esp");
+
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
+
+                switch_terminal(TERMINAL_ONE); //switching to corresponding terminal's video memory
+
+                int pid = terminals[TERMINAL_ONE].processes[ (terminals[TERMINAL_ONE].active_process) - 1];
+
+                set_program_page(pid); 
+
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                        movl     %0,%%ebp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (terminals[active_terminal].ebp)
+                        : "memory"
+                );
+                
                 return;
             }
+
             if(scan_code == F2_PRESSED){
-                switch_terminal(1);
+
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                register uint32_t prev_terminal_saved_esp asm("esp");
+            
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
+
+                switch_terminal(TERMINAL_TWO); //switching to corresponding terminal's video memory
+                
+                /*starting a base shell the first time we switch to this terminal*/
+                if (terminal_2_flag == 0){
+
+                    if(curr_pid[(MAX_PROCESSES - 1)] != -1){
+                        return;
+                    }
+
+                    terminal_2_flag = 1;
+                    execute((const uint8_t *)"shell");
+                    return;
+                }
+
+                int pid = terminals[TERMINAL_TWO].processes[ (terminals[TERMINAL_TWO].active_process) - 1];
+                set_program_page( pid);
+
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                        movl     %0,%%ebp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (terminals[active_terminal].ebp)
+                        : "memory"
+                );
+                
                 return;
             }
+                
             if(scan_code == F3_PRESSED){
-                switch_terminal(2);
+                
+                //perform context switch 
+                register uint32_t prev_terminal_saved_ebp asm("ebp");
+                register uint32_t prev_terminal_saved_esp asm("esp");
+                
+                terminals[active_terminal].ebp = prev_terminal_saved_ebp;
+                terminals[active_terminal].esp = prev_terminal_saved_esp;
+
+                switch_terminal(TERMINAL_THREE);  //switching to corresponding terminal's video memory
+
+                /*starting a base shell the first time we switch to this terminal*/
+                if (terminal_3_flag == 0){
+
+                    if(curr_pid[(MAX_PROCESSES - 1)] != -1){
+                        return;
+                    }
+
+                    terminal_3_flag = 1;
+                    execute((const uint8_t *)"shell");
+                    return;
+                }
+
+                int pid = terminals[TERMINAL_THREE].processes[ (terminals[TERMINAL_THREE].active_process) - 1];
+
+                set_program_page(pid);
+                tss.ss0 = KERNEL_DS;
+                tss.esp0 = (KERNAL_STACK - pid * KERNEL_STACK_SIZE) - 4;
+                
+                asm volatile ("                 \n\
+                        movl     %0,%%ebp       \n\
+                        leave                   \n\
+                        ret                     \n\
+                        "
+                        :
+                        : "r" (terminals[active_terminal].ebp)
+                        : "memory"
+                );
+
                 return;
             }
+
             return;
         }
 

@@ -13,10 +13,6 @@
 terminal_t terminals[MAX_TERMINALS]; // make array of 3
 int active_terminal = 0; //global variable to know which terminal is actively being shown
 
-/*flags to know if we switch to these terminals for the first time*/
-int terminal_2_flag = 0;    
-int terminal_3_flag = 0;
-
 void reset_terminal_pos(){
     terminals[active_terminal].position = -1;
 }
@@ -29,7 +25,7 @@ void reset_terminal_pos(){
  * SIDE EFFECTS: clears 
  */
 
-void clear_terminal(terminal_t term){
+void clear_terminal(){
 
     //set the contents of video memory to be blank
     //clear() defined within lib.h
@@ -107,8 +103,6 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
         if( terminals[active_terminal].terminal_buffer[i] != '\n'){
 
             ((char*) buf)[i] = terminals[active_terminal].terminal_buffer[i];
-            // terminal_.terminal_buffer[i] = '\0'; 
-            // terminal_.position = terminal_.position - 1;
             bytes_read = bytes_read + 1;
         }
 
@@ -127,14 +121,6 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     }
 
     terminals[active_terminal].position = -1; 
-    // for(j = 0; j < range; j++){
-
-    //     if((j + range) < KEYBOARD_BUFFER_SIZE){
-    //         terminal_.terminal_buffer[j] = terminal_.terminal_buffer[j + range];
-    //         terminal_.terminal_buffer[j + range] = '\0';
-    //     }
-        
-    // }
 
     sti();
 
@@ -144,16 +130,9 @@ int terminal_read(int32_t fd, void * buf, int32_t nbytes){
     else{
         return -1;
     }
-    //similar arguments to a file (user buf bytes blah blah blah)
-    // while enter isn't pressed 
-    //keyboard will send interrupts 
-    //add stuff to the buffer
-    //memcopy to read to the user buffer 
 
 }
 
-
-//call 
 /*
  * terminal write
  * writes to the screen from the terminal buffer
@@ -180,7 +159,7 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
         putc(current_character);
        
     }
-    // putc('\n');
+
     return nbytes;
 }
 
@@ -193,7 +172,6 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
  * SIDE EFFECTS: updates the terminal buffer
  */
 
-//change to update the buffer of the current index
  void terminal_update_buffer(unsigned char character) {
 
     if( character == '\n'){
@@ -208,6 +186,15 @@ int terminal_write(int32_t fd, const void * buf, int32_t nbytes){
     
  }
 
+/*
+ * terminal remove from buffer
+ * updates the terminal-keyboard buffer
+ * by removing the last character present in the corresponding
+ * terminal's buffer
+ * INPUTS: none
+ * OUTPUTS: none
+ * SIDE EFFECTS: updates the terminal's keyboard buffer
+ */
  void terminal_remove_from_buffer(){
     if(terminals[active_terminal].position >= 0){
         int delete_pos = terminals[active_terminal].position;
@@ -260,6 +247,7 @@ int get_terminal_position(void){
  */
 void switch_terminal(int id){
 
+
     int prev_active_terminal = active_terminal;
 
     memcpy((char *)terminals[prev_active_terminal].video_memory , (char * ) VIDEO, 4096); // storing the contents of vid memory into the terminal that WAS being displayed
@@ -269,23 +257,6 @@ void switch_terminal(int id){
     active_terminal = id; //changing active terminal 
 
     update_cursor( terminals[active_terminal].screen_x, terminals[active_terminal].screen_y); //updating displayed cursor position
-
-    /*case for switching to these terminals for the first time*/
-    if(active_terminal == 1){
-        if (terminal_2_flag == 0){
-             terminal_2_flag = 1;
-            execute((const uint8_t *)"shell");
-           
-        }
-    }
-
-    if(active_terminal == 2){
-        if (terminal_3_flag == 0){
-             terminal_3_flag = 1;
-            execute((const uint8_t *)"shell");
-           
-        }
-    }
 
 }
 
@@ -302,6 +273,7 @@ void switch_terminal(int id){
 void terminal_init(){
     int i;
     int j;
+    int k;
 
     for(i = 0; i < 3; i++){
         
@@ -309,22 +281,28 @@ void terminal_init(){
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
         terminals[i].position = -1;
+        terminals[i].active_process = 0;
 
         //making each terminal point to the correct memory address
-        if( i == 0){
+        if( i == TERMINAL_ONE){
             terminals[i].video_memory = TERM1_MEMORY;
         }
 
-        else if( i == 1){
+        else if( i == TERMINAL_TWO){
             terminals[i].video_memory = TERM2_MEMORY;
 
         }
         
-        else if( i==2){
+        else if( i== TERMINAL_THREE){
             terminals[i].video_memory = TERM3_MEMORY;
         }
 
         terminal_page_init(i);
+
+        // intit process list
+        for (k = 0; k < MAX_PROCESSES; k++) {
+            terminals[i].processes[k] = -1;
+        }
 
         //clearing each buffer
         for(j = 0; j < KEYBOARD_BUFFER_SIZE; j++){
