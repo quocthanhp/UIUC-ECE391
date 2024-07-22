@@ -8,5 +8,6 @@ FEATURES
 * i8259 PIC interrupt handling
 * Exception handling
 * Devices support: keyboard, real-time clock, programmable interrupt controller
+* System calls
 * In memory read-only filesystem
 
