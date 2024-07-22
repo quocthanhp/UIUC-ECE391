@@ -1,6 +1,6 @@
 OVERVIEW
 -----
-This is the project for ECE391 courses taken at the University of Illinois. The project consists of implementing an Linux-like operating system.
+This is the project for ECE391 courses taken at the University of Illinois, Urbana-Champaign. The project consists of implementing an Linux-like operating system.
 
 FEATURES
 -----
